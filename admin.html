@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quản Trị Hệ Thống Sàn - Admin Master Portal</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #fff5f8; color: #4a148c; display: flex; height: 100vh; overflow: hidden; }
+
+        /* Sidebar Hồng Phấn Pastel đồng bộ Buyer */
+        .sidebar {
+            width: 285px;
+            background: linear-gradient(180deg, #f4acb7 0%, #cdb4db 100%);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 4px 0 18px rgba(244, 172, 183, 0.35);
+            border-right: 2px solid #ffffff;
+            z-index: 10;
+        }
+        .sidebar-header {
+            padding: 22px 18px;
+            text-align: center;
+            border-bottom: 2px dashed rgba(255, 255, 255, 0.55);
+        }
+        .sidebar-header h2 {
+            font-size: 20px;
+            font-weight: 900;
+            color: #ffffff;
+            text-shadow: 1px 1px 3px rgba(74, 20, 140, 0.25);
+        }
+        .sidebar-header p {
+            font-size: 11.5px;
+            color: #4a148c;
+            font-weight: 800;
+            margin-top: 5px;
+            background: rgba(255, 255, 255, 0.4);
+            padding: 4px 10px;
+            border-radius: 12px;
+            display: inline-block;
+        }
+        .sidebar-menu { flex: 1; padding: 14px 12px; overflow-y: auto; }
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 14px;
+            color: #4a148c;
+            background: rgba(255, 255, 255, 0.35);
+            text-decoration: none;
+            border-radius: 14px;
+            margin-bottom: 7px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-weight: 700;
+            font-size: 13px;
+            border: 1.5px solid transparent;
+        }
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.75);
+            transform: translateX(4px);
+        }
+        .menu-item.active {
+            background: #ffffff;
+            color: #d81b60;
+            border-color: #d81b60;
+            box-shadow: 0 4px 12px rgba(216, 27, 96, 0.18);
+            font-weight: 800;
+        }
+        .sidebar-footer {
+            padding: 16px;
+            border-top: 2px dashed rgba(255, 255, 255, 0.55);
+            background: rgba(255, 255, 255, 0.22);
+            text-align: center;
+        }
+        .btn-logout {
+            background: #d81b60;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 12px;
+            width: 100%;
+            cursor: pointer;
+            font-weight: 800;
+        }
+        .btn-logout:hover { background: #ad1457; }
+
+        /* Main Content */
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+        .topbar {
+            background: linear-gradient(135deg, #fce4ec 0%, #f3e5f5 100%);
+            padding: 16px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #f4acb7;
+            position: sticky;
+            top: 0;
+            z-index: 5;
+        }
+        .topbar h1 { font-size: 20px; color: #ad1457; font-weight: 900; }
+        .topbar p { font-size: 12px; color: #6a1b9a; font-weight: 600; }
+
+        .content-area { padding: 25px 30px; }
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; animation: fadeIn 0.25s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .stat-card {
+            background: white;
+            padding: 18px;
+            border-radius: 18px;
+            border: 2px solid #f4acb7;
+            box-shadow: 0 4px 12px rgba(244, 172, 183, 0.2);
+            text-align: center;
+        }
+        .stat-card h3 { font-size: 11.5px; color: #6a1b9a; margin-bottom: 8px; font-weight: 800; text-transform: uppercase; }
+        .stat-card .value { font-size: 22px; font-weight: 900; color: #d81b60; }
+        .stat-card .sub { font-size: 11px; color: #888; margin-top: 4px; }
+
+        /* Card Box chuẩn Buyer */
+        .card-box {
+            background: white;
+            border: 2px solid #f4acb7;
+            border-radius: 20px;
+            padding: 22px;
+            margin-bottom: 22px;
+            box-shadow: 0 4px 12px rgba(244, 172, 183, 0.12);
+        }
+        .card-title {
+            color: #ad1457;
+            font-size: 17px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            border-bottom: 2px dashed #f4acb7;
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1.4fr; gap: 22px; }
+        @media (max-width: 1000px) { .grid-2 { grid-template-columns: 1fr; } }
+
+        /* Forms & Buttons */
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 700; color: #4a148c; margin-bottom: 5px; }
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1.5px solid #f4acb7;
+            outline: none;
+            font-size: 13.5px;
+            background: #fffdfd;
+            color: #4a148c;
+        }
+        .btn {
+            padding: 7px 13px;
+            border-radius: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            color: white;
+            font-size: 12px;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn:hover { opacity: 0.92; transform: translateY(-1px); }
+        .btn-pink { background: #d81b60; }
+        .btn-pastel { background: #f4acb7; color: #4a148c; }
+        .btn-purple { background: #8e24aa; }
+        .btn-green { background: #43a047; }
+        .btn-orange { background: #fb8c00; }
+        .btn-danger { background: #e53935; }
+
+        /* Tables */
+        table { width: 100%; border-collapse: collapse; }
+        th {
+            text-align: left;
+            padding: 11px 12px;
+            background: #fff0f5;
+            color: #ad1457;
+            font-size: 12.5px;
+            border-bottom: 2px solid #f4acb7;
+        }
+        td {
+            padding: 11px 12px;
+            border-bottom: 1px solid #f8bbd0;
+            font-size: 13px;
+            color: #333;
+            vertical-align: middle;
+        }
+
+        /* Badges */
+        .badge { padding: 4px 10px; border-radius: 12px; font-size: 11px; font-weight: 800; display: inline-block; }
+        .badge-active { background: #dcfce7; color: #166534; }
+        .badge-pending { background: #fef08a; color: #854d0e; }
+        .badge-banned { background: #fee2e2; color: #991b1b; }
+        .badge-purple { background: #f3e5f5; color: #6a1b9a; }
+
+        /* Bar Chart CSS */
+        .chart-bars {
+            display: flex; align-items: flex-end; gap: 20px; height: 190px;
+            padding: 25px 15px 6px; border-bottom: 2px solid #f4acb7;
+        }
+        .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        .bar-fill {
+            width: 100%; max-width: 55px;
+            background: linear-gradient(180deg, #ad1457 0%, #f4acb7 100%);
+            border-radius: 10px 10px 0 0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR ADMIN -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2> ADMIN </h2>
+            <p>Quản Trị Viên Toàn Sàn</p>
+        </div>
+        <div class="sidebar-menu">
+            <a class="menu-item active" onclick="switchTab('tab-reports', this)">Báo Cáo & Thống Kê Sàn</a>
+            <a class="menu-item" onclick="switchTab('tab-users', this)">Người Dùng & Duyệt KYC</a>
+            <a class="menu-item" onclick="switchTab('tab-categories', this)">Quản Lý Danh Mục Lớn</a>
+            <a class="menu-item" onclick="switchTab('tab-products', this)">Kiểm Duyệt Sản Phẩm</a>
+            <a class="menu-item" onclick="switchTab('tab-orders', this)">Đơn Hàng & Tranh Chấp</a>
+            <a class="menu-item" onclick="switchTab('tab-finance', this)">Tài Chính & Phí Hoa Hồng</a>
+            <a class="menu-item" onclick="switchTab('tab-marketing', this)">Khuyến Mãi Toàn Sàn</a>
+            <a class="menu-item" onclick="switchTab('tab-settings', this)">Cấu Hình Hệ Thống</a>
+        </div>
+        <div class="sidebar-footer">
+            <div style="font-size:13px; color:#4a148c; font-weight:800; margin-bottom:10px;">
+                 Chủ sàn: <span id="adminName"></span>
+            </div>
+            <button class="btn-logout" onclick="Auth.logout()">Đăng Xuất</button>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
+        <div class="topbar">
+            <div>
+                <h1>TRUNG TÂM ĐIỀU HÀNH TOÀN SÀN (MARKETPLACE ADMIN)</h1>
+                <p>Phạm vi: Quản trị tất cả các Gian hàng, Người mua, Danh mục gốc, Dòng tiền & Khiếu nại</p>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <a href="buyer.html" class="btn btn-pastel" style="text-decoration:none;">🛍️ Xem Giao Diện Buyer</a>
+            </div>
+        </div>
+
+        <div class="content-area">
+
+            <!-- ==========================================
+                 TAB 1: BÁO CÁO & THỐNG KÊ (TOÀN SÀN)
+                 ========================================== -->
+            <div id="tab-reports" class="tab-panel active">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <h3>Tổng GMV Toàn Sàn</h3>
+                        <div class="value" id="statRevenue">0đ</div>
+                        <div class="sub">Tổng giá trị giao dịch</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Doanh Thu Phí Hoa Hồng Sàn</h3>
+                        <div class="value" id="statPlatformFee" style="color:#8e24aa;">0đ</div>
+                        <div class="sub">Lợi nhuận ròng của sàn</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Tổng Lượt Truy Cập Sàn</h3>
+                        <div class="value" id="statVisits">5,440</div>
+                        <div class="sub">Traffic toàn hệ thống</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Gian Hàng Đang Hoạt Động</h3>
+                        <div class="value" id="statShops">0</div>
+                        <div class="sub">Đối tác Seller chính thức</div>
+                    </div>
+                    <div class="stat-card">
+                        <h3>Tổng Đơn Hàng Toàn Sàn</h3>
+                        <div class="value" id="statOrders">0</div>
+                        <div class="sub">Đã tự động tách theo Shop</div>
+                    </div>
+                </div>
+
+                <div class="grid-2">
+                    <div class="card-box">
+                        <h3 class="card-title">📈 Biểu Đồ Doanh Thu GMV Theo Gian Hàng</h3>
+                        <div class="chart-bars" id="adminChartBars"></div>
+                    </div>
+
+                    <div class="card-box">
+                        <h3 class="card-title">🏆 Bảng Xếp Hạng Top Các Shop Bán Chạy Nhất</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Hạng</th>
+                                    <th>Gian Hàng</th>
+                                    <th>Số Đơn</th>
+                                    <th>Tổng GMV</th>
+                                    <th>Phí Nộp Sàn</th>
+                                    <th>Lượt Xem</th>
+                                </tr>
+                            </thead>
+                            <tbody id="topShopsTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==========================================
+                 TAB 2: QUẢN LÝ NGƯỜI DÙNG & DUYỆT KYC
+                 ========================================== -->
+            <div id="tab-users" class="tab-panel">
+                <div class="card-box">
+                    <h3 class="card-title">
+                        <span>👥 Danh Sách Khách Hàng (Buyer) & Người Bán (Seller)</span>
+                        <span style="font-size:12px; color:#6a1b9a;">Duyệt KYC Seller mới hoặc Khóa (Ban) tài khoản vi phạm</span>
+                    </h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Username</th>
+                                <th>Họ và Tên</th>
+                                <th>Email / SĐT</th>
+                                <th>Vai Trò (Role)</th>
+                                <th>Trạng Thái Tài Khoản</th>
+                                <th>Hành Động Quản Trị</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userTableBody"></tbody>
+                    </table>
+                </div>
+
+                <div class="card-box">
+                    <h3 class="card-title">🏪 Phê Duyệt Hồ Sơ Mở Gian Hàng (KYC Shop)</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Tên Gian Hàng</th>
+                                <th>Tài Khoản Chủ Shop</th>
+                                <th>Mô Tả Ngành Hàng</th>
+                                <th>Phí Hoa Hồng Áp Dụng</th>
+                                <th>Trạng Thái KYC</th>
+                                <th>Thao Tác Duyệt / Khóa</th>
+                            </tr>
+                        </thead>
+                        <tbody id="shopKycTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ==========================================
+                 TAB 3: QUẢN LÝ DANH MỤC (CATEGORIES)
+                 ========================================== -->
+            <div id="tab-categories" class="tab-panel">
+                <div class="grid-2">
+                    <div class="card-box">
+                        <h3 class="card-title" id="catFormTitle">📑 Tạo Danh Mục Ngành Hàng Lớn</h3>
+                        <p style="font-size:12px; color:#6a1b9a; margin-bottom:12px;">
+                            * Chỉ Admin mới có quyền tạo/sửa/xóa danh mục lớn. Seller chỉ được chọn danh mục có sẵn khi đăng bán.
+                        </p>
+                        <input type="hidden" id="editCatId">
+                        <div class="form-group">
+                            <label>Tên Danh Mục Lớn (VD: Điện thoại, Thời trang, Gia dụng...)</label>
+                            <input type="text" id="catName" class="form-control" placeholder="Nhập tên danh mục...">
+                        </div>
+                        <div class="form-group">
+                            <label>Mô tả danh mục</label>
+                            <input type="text" id="catDesc" class="form-control" placeholder="Mô tả các mặt hàng thuộc danh mục...">
+                        </div>
+                        <div class="form-group">
+                            <label>Mức Phí Hoa Hồng Ngành Hàng (%)</label>
+                            <input type="number" id="catCommission" class="form-control" value="5" min="1" max="30">
+                        </div>
+                        <div style="display:flex; gap:10px;">
+                            <button class="btn btn-pink" onclick="saveCategory()">💾 Lưu Danh Mục</button>
+                            <button class="btn btn-danger" id="btnCancelCat" style="display:none;" onclick="resetCatForm()">Hủy</button>
+                        </div>
+                    </div>
+
+                    <div class="card-box">
+                        <h3 class="card-title">📚 Danh Sách Danh Mục Toàn Sàn Hiện Có</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Tên Danh Mục</th>
+                                    <th>Mô Tả</th>
+                                    <th>Phí Hoa Hồng</th>
+                                    <th>Số SP</th>
+                                    <th>Sửa / Xóa</th>
+                                </tr>
+                            </thead>
+                            <tbody id="categoryTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==========================================
+                 TAB 4: QUẢN LÝ & KIỂM DUYỆT SẢN PHẨM TOÀN SÀN
+                 ========================================== -->
+            <div id="tab-products" class="tab-panel">
+                <div class="card-box">
+                    <h3 class="card-title">
+                        <span>📦 Kiểm Duyệt Tất Cả Sản Phẩm Của Mọi Seller</span>
+                        <span style="font-size:12px; color:#d81b60;">Duyệt hiển thị, Từ chối hàng giả/hàng cấm hoặc Ép xóa vĩnh viễn</span>
+                    </h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Ảnh</th>
+                                <th>Tên Sản Phẩm</th>
+                                <th>Thuộc Gian Hàng</th>
+                                <th>Danh Mục</th>
+                                <th>Giá Bán</th>
+                                <th>Kho</th>
+                                <th>Trạng Thái Kiểm Duyệt</th>
+                                <th>Hành Động Của Admin</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminProductTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ==========================================
+                 TAB 5: QUẢN LÝ ĐƠN HÀNG & GIẢI QUYẾT TRANH CHẤP
+                 ========================================== -->
+            <div id="tab-orders" class="tab-panel">
+                <div class="card-box">
+                    <h3 class="card-title">
+                        <span>⚖️ Giám Sát Đơn Hàng Toàn Sàn & Phán Quyết Tranh Chấp</span>
+                        <span style="font-size:12px; color:#6a1b9a;">Bảo vệ quyền lợi Người mua khi có khiếu nại đổi trả với Seller</span>
+                    </h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Mã Đơn</th>
+                                <th>Khách Mua</th>
+                                <th>Gian Hàng Bán</th>
+                                <th>Sản Phẩm & Khiếu Nại</th>
+                                <th>Tổng Tiền</th>
+                                <th>Phí Sàn</th>
+                                <th>Trạng Thái Hiện Tại</th>
+                                <th>Phán Quyết Của Admin</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminOrderTable"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ==========================================
+                 TAB 6: QUẢN LÝ TÀI CHÍNH, ĐỐI SOÁT & DUYỆT RÚT TIỀN
+                 ========================================== -->
+            <div id="tab-finance" class="tab-panel">
+                <div class="grid-2">
+                    <div class="card-box">
+                        <h3 class="card-title">🏦 Duyệt Lệnh Rút Tiền Doanh Thu Của Seller</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Gian Hàng</th>
+                                    <th>Số Tiền Rút</th>
+                                    <th>Tài Khoản Ngân Hàng</th>
+                                    <th>Trạng Thái</th>
+                                    <th>Hành Động</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminWithdrawalTable"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="card-box">
+                        <h3 class="card-title">💵 Đối Soát Dòng Tiền Giữa Sàn & Các Shop</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Gian Hàng</th>
+                                    <th>Tổng Doanh Thu (GMV)</th>
+                                    <th>Sàn Thu Phí Hoa Hồng</th>
+                                    <th>Shop Thực Nhận (Net)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reconcileTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==========================================
+                 TAB 7: QUẢN LÝ KHUYẾN MÃI (MARKETING TOÀN SÀN)
+                 ========================================== -->
+            <div id="tab-marketing" class="tab-panel">
+                <div class="grid-2">
+                    <div class="card-box">
+                        <h3 class="card-title">🎉 Tạo Mã Voucher Sàn & Chiến Dịch Sale Lớn</h3>
+                        <div class="form-group">
+                            <label>Tên Chiến Dịch / Chương Trình (VD: Black Friday, Siêu Sale 11/11)</label>
+                            <input type="text" id="promoTitle" class="form-control" placeholder="VD: Đại Tiệc Hồng Phấn 12/12">
+                        </div>
+                        <div class="form-group">
+                            <label>Mã Giảm Giá Toàn Sàn (Voucher Code)</label>
+                            <input type="text" id="promoCode" class="form-control" placeholder="VD: PINKY1212">
+                        </div>
+                        <div class="form-group">
+                            <label>Mức Giảm Giá (%)</label>
+                            <input type="number" id="promoDiscount" class="form-control" value="15" min="5" max="80">
+                        </div>
+                        <div class="form-group">
+                            <label>Loại Chương Trình</label>
+                            <select id="promoType" class="form-control">
+                                <option value="Platform_Campaign">🔥 Chiến dịch Mega Sale lớn toàn sàn</option>
+                                <option value="Platform_Voucher">🎟️ Mã Voucher giảm giá toàn sàn</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-pink" onclick="createPlatformPromo()">🚀 Phát Hành Chiến Dịch Toàn Sàn</button>
+                    </div>
+
+                    <div class="card-box">
+                        <h3 class="card-title">📋 Các Chiến Dịch & Mã Giảm Giá Đang Hoạt Động</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Tên Chiến Dịch</th>
+                                    <th>Mã Voucher</th>
+                                    <th>Mức Giảm</th>
+                                    <th>Phạm Vi</th>
+                                    <th>Xóa</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminPromoTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ==========================================
+                 TAB 8: CẤU HÌNH HỆ THỐNG (SYSTEM SETTINGS)
+                 ========================================== -->
+            <div id="tab-settings" class="tab-panel">
+                <div class="card-box" style="max-width: 720px;">
+                    <h3 class="card-title">⚙️ Cấu Hình Logo, Giao Diện Trang Chủ & Cổng Thanh Toán</h3>
+                    <div class="form-group">
+                        <label>Tên Hệ Thống Sàn TMĐT</label>
+                        <input type="text" id="sysPlatformName" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Logo Text / Biểu Tượng Thương Hiệu</label>
+                        <input type="text" id="sysLogoText" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Tiêu Đề Banner Chính Trên Trang Chủ</label>
+                        <input type="text" id="sysBannerTitle" class="form-control">
+                    </div>
+                    <div class="form-group">
+                        <label>Chủ Đề Giao Diện (Theme Color)</label>
+                        <input type="text" id="sysTheme" class="form-control" value="Pastel Pink (#f4acb7 - #cdb4db)">
+                    </div>
+                    <div class="form-group">
+                        <label>Cài Đặt Cổng Thanh Toán Cho Phép Trên Sàn</label>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:8px; font-size:13.5px; font-weight:700;">
+                            <label><input type="checkbox" id="gwCod" checked> 💵 Thanh toán khi nhận hàng (COD)</label>
+                            <label><input type="checkbox" id="gwMomo" checked> 🌸 Ví điện tử MoMo</label>
+                            <label><input type="checkbox" id="gwVnpay" checked> 🏦 Cổng VNPAY / ATM Nội địa</label>
+                            <label><input type="checkbox" id="gwVisa" checked> 💳 Thẻ Quốc tế Visa / Mastercard</label>
+                        </div>
+                    </div>
+                    <button class="btn btn-pink" style="padding:11px 22px;" onclick="saveSystemSettings()">💾 Lưu Cấu Hình Hệ Thống</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+        const adminUser = Auth.requireAuth(['Admin']);
+        if (adminUser) {
+            document.getElementById('adminName').innerText = adminUser.full_name || adminUser.username;
+        }
+
+        function switchTab(tabId, el) {
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.menu-item').forEach(m => m.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            el.classList.add('active');
+
+            if (tabId === 'tab-reports') loadAdminReports();
+            if (tabId === 'tab-users') { loadUsers(); loadShopsKyc(); }
+            if (tabId === 'tab-categories') loadCategories();
+            if (tabId === 'tab-products') loadAllProductsAdmin();
+            if (tabId === 'tab-orders') loadAllOrdersAdmin();
+            if (tabId === 'tab-finance') { loadWithdrawalsAdmin(); loadAdminReports(); }
+            if (tabId === 'tab-marketing') loadPromotionsAdmin();
+            if (tabId === 'tab-settings') loadSystemSettings();
+        }
+
+        // TAB 1: BÁO CÁO TOÀN SÀN
+        async function loadAdminReports() {
+            const res = await Auth.apiFetch(`${API_BASE}/admin/stats`);
+            if (!res.ok) return;
+            const stats = await res.json();
+
+            document.getElementById('statRevenue').innerText = Number(stats.totalRevenue || 0).toLocaleString('vi-VN') + 'đ';
+            document.getElementById('statPlatformFee').innerText = Number(stats.totalPlatformFee || 0).toLocaleString('vi-VN') + 'đ';
+            document.getElementById('statVisits').innerText = Number(stats.totalVisits || 5440).toLocaleString('vi-VN');
+            document.getElementById('statShops').innerText = stats.totalShops || 0;
+            document.getElementById('statOrders').innerText = stats.totalOrders || 0;
+
+            const topShops = stats.topShops || [];
+            const maxGmv = Math.max(...topShops.map(s => s.gmv), 1);
+
+            document.getElementById('adminChartBars').innerHTML = topShops.map(s => {
+                const h = Math.max(Math.round((s.gmv / maxGmv) * 135), 14);
+                return `
+                    <div class="bar-col">
+                        <span style="font-size:11px; font-weight:800; color:#d81b60;">${Number(s.gmv).toLocaleString()}đ</span>
+                        <div class="bar-fill" style="height:${h}px;"></div>
+                        <span style="font-size:12px; font-weight:700; color:#4a148c; text-align:center;">${s.shopName}</span>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('topShopsTable').innerHTML = topShops.map((s, idx) => `
+                <tr>
+                    <td><span class="badge badge-purple">#${idx + 1}</span></td>
+                    <td><b>🏪 ${s.shopName}</b></td>
+                    <td>${s.ordersCount} đơn</td>
+                    <td style="color:#d81b60; font-weight:800;">${Number(s.gmv).toLocaleString('vi-VN')}đ</td>
+                    <td style="color:#6a1b9a; font-weight:800;">+${Number(s.platformFee).toLocaleString('vi-VN')}đ</td>
+                    <td>${Number(s.visits).toLocaleString()} lượt</td>
+                </tr>
+            `).join('');
+
+            // Bảng đối soát ở Tab 6
+            const recBody = document.getElementById('reconcileTableBody');
+            if (recBody) {
+                recBody.innerHTML = topShops.map(s => `
+                    <tr>
+                        <td><b>🏪 ${s.shopName}</b></td>
+                        <td style="font-weight:800;">${Number(s.gmv).toLocaleString('vi-VN')}đ</td>
+                        <td style="color:#8e24aa; font-weight:800;">+${Number(s.platformFee).toLocaleString('vi-VN')}đ</td>
+                        <td style="color:#2e7d32; font-weight:900;">${Number(s.sellerNet).toLocaleString('vi-VN')}đ</td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        // TAB 2: USERS & KYC
+        async function loadUsers() {
+            const res = await Auth.apiFetch(`${API_BASE}/users`);
+            if (!res.ok) return;
+            const users = await res.json();
+            document.getElementById('userTableBody').innerHTML = users.map(u => {
+                const stBadge = u.status === 'Active' ? 'badge-active' : (u.status === 'Banned' ? 'badge-banned' : 'badge-pending');
+                return `
+                    <tr>
+                        <td><b>${u.username}</b></td>
+                        <td>${u.full_name || u.username}</td>
+                        <td>${u.email || 'Chưa cập nhật'} <br><small>${u.phone || ''}</small></td>
+                        <td><span class="badge badge-purple">${u.role}</span></td>
+                        <td><span class="badge ${stBadge}">${u.status || 'Active'}</span></td>
+                        <td>
+                            ${u.role !== 'Admin' ? `
+                                ${u.status === 'Pending_KYC' ? `<button class="btn btn-green" onclick="changeUserStatus('${u._id}', 'Active')">✅ Duyệt KYC Seller</button>` : ''}
+                                ${u.status !== 'Banned' ? `<button class="btn btn-danger" onclick="changeUserStatus('${u._id}', 'Banned')">🚫 Ban (Khóa)</button>` : `<button class="btn btn-green" onclick="changeUserStatus('${u._id}', 'Active')">🔓 Mở Khóa</button>`}
+                            ` : '<span style="font-size:12px; color:#888;">Quản trị viên</span>'}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function changeUserStatus(id, status) {
+            await Auth.apiFetch(`${API_BASE}/users/${id}/status`, {
+                method: 'PUT',
+                body: JSON.stringify({ status })
+            });
+            loadUsers();
+            loadShopsKyc();
+        }
+
+        async function loadShopsKyc() {
+            const res = await Auth.apiFetch(`${API_BASE}/shops`);
+            if (!res.ok) return;
+            const shops = await res.json();
+            document.getElementById('shopKycTableBody').innerHTML = shops.map(s => {
+                const stBadge = s.status === 'Active' ? 'badge-active' : (s.status === 'Đã khóa' ? 'badge-banned' : 'badge-pending');
+                return `
+                    <tr>
+                        <td><b>🏪 ${s.shop_name}</b></td>
+                        <td>${s.owner_name}</td>
+                        <td>${s.description}</td>
+                        <td><b>${s.commissionRate || 5}%</b></td>
+                        <td><span class="badge ${stBadge}">${s.status}</span></td>
+                        <td>
+                            ${s.status !== 'Active' ? `<button class="btn btn-green" onclick="updateShopKyc('${s._id}', 'Active')">✅ Phê Duyệt Shop</button>` : ''}
+                            ${s.status !== 'Đã khóa' ? `<button class="btn btn-danger" onclick="updateShopKyc('${s._id}', 'Đã khóa')">🚫 Khóa Gian Hàng</button>` : ''}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function updateShopKyc(id, status) {
+            await Auth.apiFetch(`${API_BASE}/shops/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify({ status })
+            });
+            loadShopsKyc();
+        }
+
+        // TAB 3: QUẢN LÝ DANH MỤC LỚN
+        let categoriesCache = [];
+        async function loadCategories() {
+            const res = await fetch(`${API_BASE}/categories/category/viewall`);
+            if (!res.ok) return;
+            const data = await res.json();
+            categoriesCache = data.category || [];
+
+            document.getElementById('categoryTableBody').innerHTML = categoriesCache.map(c => `
+                <tr>
+                    <td><b>📑 ${c.name}</b></td>
+                    <td>${c.description || 'Danh mục chuẩn của sàn'}</td>
+                    <td><span class="badge badge-purple">${c.commissionFee || 5}%</span></td>
+                    <td><b>${c.items} SP</b></td>
+                    <td>
+                        <button class="btn btn-orange" onclick="openEditCategory('${c._id}')">✏️ Sửa</button>
+                        <button class="btn btn-danger" onclick="deleteCategory('${c._id}')">🗑️ Xóa</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function saveCategory() {
+            const editId = document.getElementById('editCatId').value;
+            const category_name = document.getElementById('catName').value.trim();
+            const description = document.getElementById('catDesc').value.trim();
+            const commissionFee = Number(document.getElementById('catCommission').value || 5);
+
+            if (!category_name) return alert('Vui lòng nhập tên danh mục lớn!');
+
+            const url = editId ? `${API_BASE}/categories/category/${editId}` : `${API_BASE}/categories/category`;
+            const method = editId ? 'PUT' : 'POST';
+
+            await fetch(url, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ category_name, description, commissionFee })
+            });
+
+            alert(editId ? 'Đã cập nhật danh mục và mức phí hoa hồng!' : 'Đã tạo danh mục gốc mới!');
+            resetCatForm();
+            loadCategories();
+        }
+
+        function openEditCategory(id) {
+            const c = categoriesCache.find(x => x._id === id);
+            if (!c) return;
+            document.getElementById('editCatId').value = c._id;
+            document.getElementById('catName').value = c.name;
+            document.getElementById('catDesc').value = c.description || '';
+            document.getElementById('catCommission').value = c.commissionFee || 5;
+            document.getElementById('catFormTitle').innerText = '✏️ Sửa Danh Mục & Phí Hoa Hồng';
+            document.getElementById('btnCancelCat').style.display = 'inline-flex';
+        }
+
+        function resetCatForm() {
+            document.getElementById('editCatId').value = '';
+            document.getElementById('catName').value = '';
+            document.getElementById('catDesc').value = '';
+            document.getElementById('catCommission').value = 5;
+            document.getElementById('catFormTitle').innerText = '📑 Tạo Danh Mục Ngành Hàng Lớn';
+            document.getElementById('btnCancelCat').style.display = 'none';
+        }
+
+        async function deleteCategory(id) {
+            if (!confirm('Xác nhận xóa danh mục này khỏi hệ thống?')) return;
+            await fetch(`${API_BASE}/categories/category/${id}`, { method: 'DELETE' });
+            loadCategories();
+        }
+
+        // TAB 4: KIỂM DUYỆT SẢN PHẨM TOÀN SÀN
+        async function loadAllProductsAdmin() {
+            const res = await fetch(`${API_BASE}/products?includeAll=true`);
+            if (!res.ok) return;
+            const products = await res.json();
+
+            document.getElementById('adminProductTable').innerHTML = products.map(p => {
+                const img = (p.images && p.images[0]) ? p.images[0] : 'https://cdn-icons-png.flaticon.com/512/679/679821.png';
+                const st = p.approvalStatus || 'Đã duyệt';
+                const badgeClass = st === 'Đã duyệt' ? 'badge-active' : (st === 'Từ chối' ? 'badge-banned' : 'badge-pending');
+
+                return `
+                    <tr>
+                        <td><img src="${img}" style="width:42px; height:42px; object-fit:contain; border-radius:8px; border:1px solid #f4acb7;"></td>
+                        <td><b>${p.productName}</b></td>
+                        <td><span class="badge badge-purple">🏪 ${p.shopName}</span></td>
+                        <td>${p.category}</td>
+                        <td style="color:#d81b60; font-weight:800;">${Number(p.price).toLocaleString('vi-VN')}đ</td>
+                        <td>${p.quantity}</td>
+                        <td><span class="badge ${badgeClass}">${st}</span></td>
+                        <td style="display:flex; gap:6px; flex-wrap:wrap;">
+                            ${st !== 'Đã duyệt' ? `<button class="btn btn-green" onclick="moderateProduct('${p._id}', 'Đã duyệt')">✅ Duyệt SP</button>` : ''}
+                            ${st !== 'Từ chối' ? `<button class="btn btn-orange" onclick="moderateProduct('${p._id}', 'Từ chối')">🚫 Từ Chối (Vi Phạm)</button>` : ''}
+                            <button class="btn btn-danger" onclick="forceDeleteProduct('${p._id}')">🗑️ Ép Xóa</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function moderateProduct(id, approvalStatus) {
+            await Auth.apiFetch(`${API_BASE}/products/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify({ approvalStatus })
+            });
+            loadAllProductsAdmin();
+        }
+
+        async function forceDeleteProduct(id) {
+            if (!confirm('Sản phẩm vi phạm pháp luật/hàng cấm. Admin chắc chắn ép xóa vĩnh viễn khỏi sàn?')) return;
+            await Auth.apiFetch(`${API_BASE}/products/${id}`, { method: 'DELETE' });
+            loadAllProductsAdmin();
+        }
+
+        // TAB 5: ĐƠN HÀNG & TRANH CHẤP TOÀN SÀN
+        async function loadAllOrdersAdmin() {
+            const res = await Auth.apiFetch(`${API_BASE}/orders`);
+            if (!res.ok) return;
+            const orders = await res.json();
+
+            document.getElementById('adminOrderTable').innerHTML = orders.map(o => {
+                const stBadge = o.status === 'Đã hoàn thành' ? 'badge-active' : (o.status.includes('hoàn') || o.status === 'Hủy đơn' ? 'badge-banned' : 'badge-pending');
+                return `
+                    <tr>
+                        <td><b>#${o._id.slice(-6).toUpperCase()}</b></td>
+                        <td><b>👤 ${o.buyerName}</b></td>
+                        <td><span class="badge badge-purple">🏪 ${o.shopName}</span></td>
+                        <td>
+                            ${o.productName}
+                            ${o.returnReason ? `<div style="color:#c62828; font-size:11.5px; font-weight:700;">⚠️ Khiếu nại: ${o.returnReason}</div>` : ''}
+                        </td>
+                        <td style="color:#d81b60; font-weight:800;">${Number(o.totalAmount).toLocaleString('vi-VN')}đ</td>
+                        <td style="color:#6a1b9a; font-weight:800;">+${Number(o.platformFee || Math.round(o.totalAmount*0.05)).toLocaleString('vi-VN')}đ</td>
+                        <td><span class="badge ${stBadge}">${o.status}</span></td>
+                        <td style="display:flex; gap:6px; flex-wrap:wrap;">
+                            ${o.status !== 'Đã hoàn tiền' && o.status !== 'Đã hoàn thành' ? `
+                                <button class="btn btn-orange" onclick="resolveDispute('${o._id}', 'Đã hoàn tiền')">💸 Hoàn Tiền Cho Khách</button>
+                            ` : ''}
+                            ${o.status !== 'Đã hoàn thành' ? `
+                                <button class="btn btn-green" onclick="resolveDispute('${o._id}', 'Đã hoàn thành')">✅ Tất Toán Cho Shop</button>
+                            ` : ''}
+                            ${o.status !== 'Hủy đơn' && o.status !== 'Đã hoàn thành' ? `
+                                <button class="btn btn-danger" onclick="resolveDispute('${o._id}', 'Hủy đơn')">Hủy Đơn</button>
+                            ` : ''}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        async function resolveDispute(orderId, status) {
+            if (!confirm(`Admin xác nhận phán quyết chuyển trạng thái đơn hàng sang "${status}"?`)) return;
+            await Auth.apiFetch(`${API_BASE}/orders/${orderId}`, {
+                method: 'PUT',
+                body: JSON.stringify({ status })
+            });
+            loadAllOrdersAdmin();
+        }
+
+        // TAB 6: DUYỆT RÚT TIỀN SELLER
+        async function loadWithdrawalsAdmin() {
+            const res = await Auth.apiFetch(`${API_BASE}/withdrawals`);
+            if (!res.ok) return;
+            const list = await res.json();
+
+            document.getElementById('adminWithdrawalTable').innerHTML = list.map(w => `
+                <tr>
+                    <td><b>🏪 ${w.shopName}</b></td>
+                    <td style="color:#d81b60; font-weight:900;">${Number(w.amount).toLocaleString('vi-VN')}đ</td>
+                    <td>${w.bankInfo}</td>
+                    <td>
+                        <span class="badge ${w.status === 'Đã chuyển khoản' ? 'badge-active' : (w.status === 'Từ chối' ? 'badge-banned' : 'badge-pending')}">
+                            ${w.status}
+                        </span>
+                    </td>
+                    <td>
+                        ${w.status === 'Chờ duyệt' ? `
+                            <button class="btn btn-green" onclick="processWithdrawal('${w._id}', 'Đã chuyển khoản')">✅ Duyệt & Chuyển Khoản</button>
+                            <button class="btn btn-danger" onclick="processWithdrawal('${w._id}', 'Từ chối')">Từ Chối</button>
+                        ` : '<span style="font-size:12px; color:#888;">Đã đối soát</span>'}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function processWithdrawal(id, status) {
+            await Auth.apiFetch(`${API_BASE}/withdrawals/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify({ status })
+            });
+            alert(`Đã cập nhật trạng thái lệnh rút tiền: ${status}`);
+            loadWithdrawalsAdmin();
+        }
+
+        // TAB 7: MARKETING & VOUCHER SÀN
+        async function loadPromotionsAdmin() {
+            const res = await fetch(`${API_BASE}/promotions`);
+            if (!res.ok) return;
+            const list = await res.json();
+            document.getElementById('adminPromoTable').innerHTML = list.map(p => `
+                <tr>
+                    <td><b>🎉 ${p.title}</b></td>
+                    <td><span class="badge badge-purple">${p.code}</span></td>
+                    <td style="color:#d81b60; font-weight:900;">-${p.discountPercent}%</td>
+                    <td>${p.shopName}</td>
+                    <td><button class="btn btn-danger" onclick="deletePromo('${p._id}')">🗑️ Xóa</button></td>
+                </tr>
+            `).join('');
+        }
+
+        async function createPlatformPromo() {
+            const title = document.getElementById('promoTitle').value.trim();
+            const code = document.getElementById('promoCode').value.trim().toUpperCase();
+            const discountPercent = Number(document.getElementById('promoDiscount').value);
+            const type = document.getElementById('promoType').value;
+
+            if (!title || !code) return alert('Vui lòng nhập Tên chiến dịch và Mã Voucher!');
+
+            await Auth.apiFetch(`${API_BASE}/promotions`, {
+                method: 'POST',
+                body: JSON.stringify({ title, code, discountPercent, type, shopName: 'Toàn sàn' })
+            });
+            alert('🎉 Đã kích hoạt chiến dịch khuyến mãi toàn sàn! Các Seller có thể đăng ký tham gia ngay.');
+            document.getElementById('promoTitle').value = '';
+            document.getElementById('promoCode').value = '';
+            loadPromotionsAdmin();
+        }
+
+        async function deletePromo(id) {
+            await Auth.apiFetch(`${API_BASE}/promotions/${id}`, { method: 'DELETE' });
+            loadPromotionsAdmin();
+        }
+
+        // TAB 8: CẤU HÌNH HỆ THỐNG
+        async function loadSystemSettings() {
+            const res = await fetch(`${API_BASE}/settings`);
+            if (!res.ok) return;
+            const cfg = await res.json();
+            document.getElementById('sysPlatformName').value = cfg.platformName || '';
+            document.getElementById('sysLogoText').value = cfg.logoText || '';
+            document.getElementById('sysBannerTitle').value = cfg.homepageBannerTitle || '';
+            document.getElementById('sysTheme').value = cfg.homepageTheme || '';
+            if (cfg.paymentGateways) {
+                document.getElementById('gwCod').checked = !!cfg.paymentGateways.cod;
+                document.getElementById('gwMomo').checked = !!cfg.paymentGateways.momo;
+                document.getElementById('gwVnpay').checked = !!cfg.paymentGateways.vnpay;
+                document.getElementById('gwVisa').checked = !!cfg.paymentGateways.visa;
+            }
+        }
+
+        async function saveSystemSettings() {
+            const payload = {
+                platformName: document.getElementById('sysPlatformName').value.trim(),
+                logoText: document.getElementById('sysLogoText').value.trim(),
+                homepageBannerTitle: document.getElementById('sysBannerTitle').value.trim(),
+                homepageTheme: document.getElementById('sysTheme').value.trim(),
+                paymentGateways: {
+                    cod: document.getElementById('gwCod').checked,
+                    momo: document.getElementById('gwMomo').checked,
+                    vnpay: document.getElementById('gwVnpay').checked,
+                    visa: document.getElementById('gwVisa').checked
+                }
+            };
+            const res = await Auth.apiFetch(`${API_BASE}/settings`, {
+                method: 'PUT',
+                body: JSON.stringify(payload)
+            });
+            if (res.ok) alert('⚙️ Đã lưu cấu hình hệ thống và cổng thanh toán toàn sàn!');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (adminUser) loadAdminReports();
+        });
+    </script>
+</body>
+</html>

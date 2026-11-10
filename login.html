@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Đăng Nhập - Sàn TMĐT Nhóm 08</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background: linear-gradient(135deg, #f4acb7 0%, #cdb4db 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; margin: 0; }
+        .login-box { background: white; padding: 40px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); width: 100%; max-width: 400px; text-align: center; }
+        .login-box h2 { color: #4a148c; margin-top: 0; margin-bottom: 20px; }
+        .form-group { margin-bottom: 15px; text-align: left; }
+        .form-group label { display: block; font-size: 13px; font-weight: 700; color: #6a1b9a; margin-bottom: 5px; }
+        .form-control { width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #f4acb7; outline: none; font-size: 14px; }
+        .btn { width: 100%; padding: 12px; border-radius: 10px; font-weight: bold; font-size: 15px; cursor: pointer; border: none; transition: 0.2s; margin-top: 10px; }
+        .btn-primary { background: #d81b60; color: white; }
+        .btn-primary:hover { background: #ad1457; }
+        .btn-outline { background: white; color: #d81b60; border: 2px solid #d81b60; }
+        .btn-outline:hover { background: #fff0f5; }
+        .error-msg { color: red; font-size: 13px; margin-bottom: 10px; display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="login-box">
+        <h2 id="formTitle">Đăng Nhập</h2>
+        <div id="errorMsg" class="error-msg"></div>
+
+        <!-- Form Đăng Nhập -->
+        <div id="loginForm">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="username" class="form-control" placeholder="Nhập username...">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="password" class="form-control" placeholder="Nhập password...">
+            </div>
+            <button class="btn btn-primary" onclick="doLogin()">Đăng Nhập</button>
+            <button class="btn btn-outline" onclick="toggleForm()">Chưa có tài khoản? Đăng ký</button>
+        </div>
+
+        <!-- Form Đăng Ký (Ẩn mặc định) -->
+        <div id="registerForm" style="display: none;">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="regUsername" class="form-control" placeholder="Nhập username...">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="regPassword" class="form-control" placeholder="Nhập password (>= 6 ký tự)...">
+            </div>
+            <div class="form-group">
+                <label>Họ và Tên</label>
+                <input type="text" id="regFullName" class="form-control" placeholder="Nguyễn Văn A">
+            </div>
+            <div class="form-group">
+                <label>Vai trò</label>
+                <select id="regRole" class="form-control">
+                    <option value="Buyer">Người Mua (Buyer)</option>
+                    <option value="Seller">Người Bán (Seller)</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" onclick="doRegister()">Đăng Ký</button>
+            <button class="btn btn-outline" onclick="toggleForm()">Đã có tài khoản? Đăng nhập</button>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+
+        // Nếu đã đăng nhập thì tự động chuyển hướng
+        const currentUser = Auth.getUser();
+        if (currentUser) {
+            redirectUser(currentUser.role);
+        }
+
+        function redirectUser(role) {
+            if (role === 'Admin') window.location.href = 'admin.html';
+            else if (role === 'Seller') window.location.href = 'seller.html';
+            else window.location.href = 'buyer.html';
+        }
+
+        function showError(msg) {
+            const el = document.getElementById('errorMsg');
+            el.innerText = msg;
+            el.style.display = 'block';
+        }
+
+        function toggleForm() {
+            const isLogin = document.getElementById('loginForm').style.display !== 'none';
+            document.getElementById('errorMsg').style.display = 'none';
+            if (isLogin) {
+                document.getElementById('loginForm').style.display = 'none';
+                document.getElementById('registerForm').style.display = 'block';
+                document.getElementById('formTitle').innerText = 'Đăng Ký Tài Khoản';
+            } else {
+                document.getElementById('loginForm').style.display = 'block';
+                document.getElementById('registerForm').style.display = 'none';
+                document.getElementById('formTitle').innerText = 'Đăng Nhập';
+            }
+        }
+
+        async function doLogin() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value;
+            if (!username || !password) return showError('Vui lòng nhập đủ thông tin');
+
+            try {
+                const res = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await res.json();
+                
+                if (!res.ok) return showError(data.error || 'Đăng nhập thất bại');
+
+                Auth.saveAuth(data.token, data.user);
+                redirectUser(data.user.role);
+            } catch (err) {
+                showError('Lỗi kết nối đến Server!');
+            }
+        }
+
+        async function doRegister() {
+            const username = document.getElementById('regUsername').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const full_name = document.getElementById('regFullName').value.trim();
+            const role = document.getElementById('regRole').value;
+
+            if (!username || !password) return showError('Vui lòng nhập username và password');
+
+            try {
+                const res = await fetch(`${API_BASE}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password, full_name, role })
+                });
+                const data = await res.json();
+                
+                if (!res.ok) return showError(data.error || 'Đăng ký thất bại');
+
+                alert('Đăng ký thành công! Hãy đăng nhập.');
+                toggleForm(); // Chuyển về form đăng nhập
+                document.getElementById('username').value = username;
+            } catch (err) {
+                showError('Lỗi kết nối đến Server!');
+            }
+        }
+    </script>
+</body>
+</html>
