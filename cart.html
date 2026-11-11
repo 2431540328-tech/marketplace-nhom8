@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giỏ Hàng Của Bạn (Shopping Cart) - PinkyMart</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #fff5f8; color: #4a148c; }
+
+        .navbar {
+            background: rgba(255, 255, 255, 0.94);
+            padding: 14px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #f4acb7;
+            box-shadow: 0 4px 15px rgba(244, 172, 183, 0.25);
+        }
+        .brand-logo {
+            text-decoration: none;
+            font-size: 24px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #d81b60, #8e24aa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .btn-back {
+            background: #fff0f5;
+            color: #d81b60;
+            border: 2px solid #f4acb7;
+            padding: 8px 18px;
+            border-radius: 22px;
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 13.5px;
+        }
+        .btn-back:hover { background: #d81b60; color: white; border-color: #d81b60; }
+
+        .container { max-width: 1200px; margin: 28px auto; padding: 0 20px; }
+
+        .cart-header-banner {
+            background: linear-gradient(135deg, #f4acb7 0%, #cdb4db 100%);
+            padding: 24px 30px;
+            border-radius: 22px;
+            color: white;
+            margin-bottom: 24px;
+            border: 2px solid #ffffff;
+            box-shadow: 0 6px 18px rgba(244, 172, 183, 0.35);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .cart-header-banner h1 { font-size: 24px; font-weight: 900; text-shadow: 1px 1px 3px rgba(74, 20, 140, 0.25); }
+        .cart-header-banner p { font-size: 13px; color: #4a148c; font-weight: 700; margin-top: 4px; }
+
+        .cart-layout {
+            display: grid;
+            grid-template-columns: 1.65fr 1fr;
+            gap: 24px;
+        }
+        @media (max-width: 960px) { .cart-layout { grid-template-columns: 1fr; } }
+
+        .card-box {
+            background: white;
+            border: 2px solid #f4acb7;
+            border-radius: 22px;
+            padding: 24px;
+            box-shadow: 0 4px 15px rgba(244, 172, 183, 0.15);
+        }
+        .card-title {
+            color: #ad1457;
+            font-size: 18px;
+            font-weight: 900;
+            margin-bottom: 16px;
+            border-bottom: 2px dashed #f4acb7;
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Bảng Shopping Cart chuẩn Lab 10 */
+        table { width: 100%; border-collapse: collapse; }
+        th {
+            background: #fff0f5;
+            color: #ad1457;
+            padding: 12px;
+            font-size: 13px;
+            text-align: left;
+            border-bottom: 2px solid #f4acb7;
+        }
+        td {
+            padding: 14px 12px;
+            border-bottom: 1px solid #f8bbd0;
+            font-size: 13.5px;
+            color: #333;
+            vertical-align: middle;
+        }
+        .prod-img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+            border-radius: 12px;
+            border: 1.5px solid #f4acb7;
+            padding: 4px;
+            background: #fffdfd;
+        }
+        .shop-badge {
+            display: inline-block;
+            background: #f3e5f5;
+            color: #6a1b9a;
+            padding: 3px 9px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 800;
+        }
+        .qty-control {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #fff0f5;
+            padding: 4px 8px;
+            border-radius: 10px;
+            border: 1px solid #f4acb7;
+        }
+        .qty-btn {
+            background: #f4acb7;
+            color: #4a148c;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 6px;
+            font-weight: 900;
+            cursor: pointer;
+        }
+        .qty-btn:hover { background: #d81b60; color: white; }
+        .btn-remove {
+            background: #fee2e2;
+            color: #dc2626;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 800;
+            font-size: 12px;
+        }
+
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 800; color: #4a148c; margin-bottom: 6px; }
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 12px;
+            border: 1.5px solid #f4acb7;
+            outline: none;
+            font-size: 13.5px;
+            color: #4a148c;
+            background: #fffdfd;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 14px;
+            font-weight: 700;
+        }
+        .summary-total {
+            display: flex;
+            justify-content: space-between;
+            padding-top: 12px;
+            border-top: 2px dashed #f4acb7;
+            font-size: 18px;
+            font-weight: 900;
+            color: #d81b60;
+            margin-bottom: 18px;
+        }
+
+        .btn-checkout-next {
+            width: 100%;
+            padding: 14px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #d81b60 0%, #8e24aa 100%);
+            color: white;
+            font-weight: 900;
+            font-size: 15px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 6px 16px rgba(216, 27, 96, 0.3);
+            transition: 0.2s;
+        }
+        .btn-checkout-next:hover { transform: translateY(-2px); opacity: 0.95; }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <a href="buyer.html" class="brand-logo">🌸 PINKYMART</a>
+        <div style="display:flex; gap:12px; align-items:center;">
+            <a href="buyer.html" class="btn-back">← Tiếp tục mua hàng</a>
+            <span style="font-size:13px; font-weight:800;">👤 <span id="buyerName"></span></span>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="cart-header-banner">
+            <div>
+                <h1>🛒 GIỎ HÀNG ĐA GIAN HÀNG (SHOPPING CART)</h1>
+                <p>Hệ thống tự động gom sản phẩm, áp dụng ưu đãi Mua Chung & tách đơn theo từng Shop khi thanh toán</p>
+            </div>
+            <a href="buyer.html" class="btn-back" style="background:white;">+ Chọn thêm sản phẩm</a>
+        </div>
+
+        <div class="cart-layout">
+            <!-- BẢNG GIỎ HÀNG CHUẨN LAB 10 -->
+            <div class="card-box">
+                <h3 class="card-title">
+                    <span>📋 Danh Sách Sản Phẩm Trong Giỏ</span>
+                    <span id="shopSplitCount" class="shop-badge">0 Gian hàng</span>
+                </h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Hình ảnh</th>
+                            <th>Tên sản phẩm</th>
+                            <th>Gian hàng</th>
+                            <th>Đơn giá</th>
+                            <th>Số lượng</th>
+                            <th>Thành tiền</th>
+                            <th>Xóa</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cartTableBody"></tbody>
+                </table>
+            </div>
+
+            <!-- CỘT TÍNH TIỀN & CHUYỂN SANG TRANG THANH TOÁN -->
+            <div class="card-box">
+                <h3 class="card-title">💳 Tóm Tắt Đơn Hàng & Ưu Đãi</h3>
+
+                <div class="form-group">
+                    <label>Chế độ mua hàng:</label>
+                    <select id="buyingMode" class="form-control" onchange="recalculateSummary()">
+                        <option value="Mua lẻ">Mua lẻ tiêu chuẩn (Nguyên giá)</option>
+                        <option value="Mua chung nhóm (-15%)">🔥 Mua chung nhóm (Giảm ngay 15%)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Mã Voucher Khuyến Mãi Toàn Sàn:</label>
+                    <select id="voucherSelect" class="form-control" onchange="recalculateSummary()">
+                        <option value="0">-- Không áp dụng Voucher --</option>
+                    </select>
+                </div>
+
+                <div style="background:#fff0f5; padding:16px; border-radius:16px; border:1.5px solid #f4acb7; margin:16px 0;">
+                    <div class="summary-row">
+                        <span>Tạm tính gốc:</span>
+                        <span id="rawSubtotal">0 ₫</span>
+                    </div>
+                    <div class="summary-row" style="color:#8e24aa;">
+                        <span>Giảm giá Mua chung:</span>
+                        <span id="groupDiscountText">-0 ₫</span>
+                    </div>
+                    <div class="summary-row" style="color:#2e7d32;">
+                        <span>Giảm giá Voucher Sàn:</span>
+                        <span id="voucherDiscountText">-0 ₫</span>
+                    </div>
+                    <div class="summary-total">
+                        <span>Tổng cộng:</span>
+                        <span id="finalTotalText">0 ₫</span>
+                    </div>
+                </div>
+
+                <button class="btn-checkout-next" onclick="proceedToCheckout()">
+                    🚀 Đặt Hàng & Thanh Toán (VNPAY / COD) →
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+        const buyer = Auth.requireAuth(['Buyer', 'Seller', 'Admin']);
+        if (buyer) document.getElementById('buyerName').innerText = buyer.full_name || buyer.username;
+
+        let cartItems = [];
+        let calculatedFinalAmount = 0;
+
+        async function loadPromos() {
+            try {
+                const res = await fetch(`${API_BASE}/promotions`);
+                if (res.ok) {
+                    const promos = await res.json();
+                    document.getElementById('voucherSelect').innerHTML = `<option value="0">-- Không áp dụng Voucher --</option>` +
+                        promos.map(p => `<option value="${p.discountPercent}" data-code="${p.code}">🎟️ [${p.code}] ${p.title} (-${p.discountPercent}%)</option>`).join('');
+                }
+            } catch (e) {}
+        }
+
+        async function loadCartPage() {
+            const res = await Auth.apiFetch(`${API_BASE}/cart`);
+            if (!res.ok) return;
+            const cart = await res.json();
+            cartItems = cart.items || [];
+
+            const shopsSet = new Set(cartItems.map(i => i.shopName || 'Gian hàng chung'));
+            document.getElementById('shopSplitCount').innerText = `Tự tách thành ${shopsSet.size} đơn theo Shop`;
+
+            const tbody = document.getElementById('cartTableBody');
+            if (cartItems.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align:center; padding:35px; color:#888;">
+                            Giỏ hàng của bạn đang trống! <a href="buyer.html" style="color:#d81b60; font-weight:800;">Quay lại mua sắm ngay</a>
+                        </td>
+                    </tr>
+                `;
+                recalculateSummary();
+                return;
+            }
+
+            tbody.innerHTML = cartItems.map(item => {
+                const sub = item.price * item.quantity;
+                const img = item.image || 'https://cdn-icons-png.flaticon.com/512/679/679821.png';
+                return `
+                    <tr>
+                        <td><img src="${img}" class="prod-img"></td>
+                        <td>
+                            <b style="color:#4a148c;">${item.name}</b>
+                            ${item.isBargained ? `<div style="font-size:11px; color:#2e7d32; font-weight:800;">🤝 Giá đã chốt mặc cả</div>` : ''}
+                        </td>
+                        <td><span class="shop-badge">🏪 ${item.shopName || 'Gian hàng chung'}</span></td>
+                        <td style="font-weight:700;">${Number(item.price).toLocaleString('vi-VN')} ₫</td>
+                        <td>
+                            <div class="qty-control">
+                                <button class="qty-btn" onclick="changeQty('${item.product_id}', -1)">-</button>
+                                <span style="font-weight:900; min-width:20px; text-align:center;">${item.quantity}</span>
+                                <button class="qty-btn" onclick="changeQty('${item.product_id}', 1)">+</button>
+                            </div>
+                        </td>
+                        <td style="color:#d81b60; font-weight:900;">${Number(sub).toLocaleString('vi-VN')} ₫</td>
+                        <td>
+                            <button class="btn-remove" onclick="removeItem('${item.product_id}')">🗑️ Xóa</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            recalculateSummary();
+        }
+
+        function recalculateSummary() {
+            const rawSum = cartItems.reduce((s, i) => s + (i.price * i.quantity), 0);
+            const buyingMode = document.getElementById('buyingMode').value;
+            const voucherPct = Number(document.getElementById('voucherSelect').value || 0);
+
+            const groupDisc = buyingMode.includes('-15%') ? Math.round(rawSum * 0.15) : 0;
+            const afterGroup = rawSum - groupDisc;
+            const voucherDisc = voucherPct > 0 ? Math.round(afterGroup * (voucherPct / 100)) : 0;
+            calculatedFinalAmount = Math.max(afterGroup - voucherDisc, 0);
+
+            document.getElementById('rawSubtotal').innerText = rawSum.toLocaleString('vi-VN') + ' ₫';
+            document.getElementById('groupDiscountText').innerText = '-' + groupDisc.toLocaleString('vi-VN') + ' ₫';
+            document.getElementById('voucherDiscountText').innerText = '-' + voucherDisc.toLocaleString('vi-VN') + ' ₫';
+            document.getElementById('finalTotalText').innerText = calculatedFinalAmount.toLocaleString('vi-VN') + ' ₫';
+        }
+
+        async function changeQty(productId, delta) {
+            await Auth.apiFetch(`${API_BASE}/cart/update`, {
+                method: 'PUT',
+                body: JSON.stringify({ product_id: productId, delta })
+            });
+            loadCartPage();
+        }
+
+        async function removeItem(productId) {
+            await Auth.apiFetch(`${API_BASE}/cart/remove/${productId}`, { method: 'DELETE' });
+            loadCartPage();
+        }
+
+        function proceedToCheckout() {
+            if (cartItems.length === 0) return alert('Giỏ hàng của bạn đang trống!');
+            const buyingMode = document.getElementById('buyingMode').value;
+            const voucherDiscount = Number(document.getElementById('voucherSelect').value || 0);
+
+            // Lưu thông tin tạm sang trang checkout.html
+            localStorage.setItem('mkt_checkout_meta', JSON.stringify({
+                buyingMode,
+                voucherDiscount,
+                amount: calculatedFinalAmount
+            }));
+            window.location.href = 'checkout.html';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (buyer) {
+                loadPromos();
+                loadCartPage();
+            }
+        });
+    </script>
+</body>
+</html>

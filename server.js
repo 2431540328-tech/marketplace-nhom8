@@ -1005,6 +1005,213 @@ app.get('/api/auth/me', authenticate, async (req, res) => {
     } catch (err) { res.status(500).json({ error: err.message }); }
 });
 
+// ==========================================
+// 9. TÍCH HỢP CỔNG THANH TOÁN VNPAY (CHUẨN LAB 10 & TECHSPEC 2.1.0)
+// ==========================================
+const crypto = require('crypto');
+
+const VNPAY_CONFIG = {
+    vnp_TmnCode: process.env.VNP_TMNCODE || 'CGXZLS0Z', // Mã test hoặc lấy từ .env
+    vnp_HashSecret: process.env.VNP_HASHSECRET || 'XNBCJFAKAZQSGTARRLGCHVZWCIOIGSHN',
+    vnp_Url: 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html',
+    vnp_ReturnUrl: `http://localhost:${PORT}/api/orders/vnpay_return`
+};
+
+function formatVnpDate(date) {
+    const pad = (n) => (n < 10 ? '0' + n : '' + n);
+    return (
+        date.getFullYear().toString() +
+        pad(date.getMonth() + 1) +
+        pad(date.getDate()) +
+        pad(date.getHours()) +
+        pad(date.getMinutes()) +
+        pad(date.getSeconds())
+    );
+}
+
+function sortObjectVnpay(obj) {
+    const sorted = {};
+    const keys = Object.keys(obj).sort();
+    for (const key of keys) {
+        if (obj[key] !== '' && obj[key] !== null && obj[key] !== undefined) {
+            sorted[key] = encodeURIComponent(obj[key]).replace(/%20/g, '+');
+        }
+    }
+    return sorted;
+}
+
+// Route 1: Tạo đơn hàng từ Giỏ hàng & Sinh URL thanh toán VNPAY (Chuẩn Lab 10)
+app.post('/api/orders/create_payment_url', authenticate, async (req, res) => {
+    try {
+        const buyerName = req.user.username;
+        const {
+            amount,
+            bankCode = '',
+            language = 'vn',
+            buyingMode = 'Mua lẻ',
+            voucherDiscount = 0,
+            useSimulator = false
+        } = req.body;
+
+        const cart = await Cart.findOne({ user_id: buyerName });
+        if (!cart || cart.items.length === 0) {
+            return res.status(400).json({ error: 'Giỏ hàng của bạn đang trống!' });
+        }
+
+        // Kiểm tra & Trừ tồn kho + Tách đơn theo từng Gian hàng (Shop)
+        const groupedByShop = {};
+        const deductedStock = [];
+
+        try {
+            for (const item of cart.items) {
+                const shop = item.shopName || 'Gian hàng chung';
+                if (!groupedByShop[shop]) groupedByShop[shop] = [];
+                groupedByShop[shop].push(item);
+
+                const cleanName = item.name.replace(' [Giá chốt mặc cả]', '');
+                const product = await Product.findOneAndUpdate(
+                    { productName: cleanName, quantity: { $gte: item.quantity } },
+                    { $inc: { quantity: -item.quantity } },
+                    { returnDocument: 'after' }
+                );
+                if (!product) {
+                    throw new Error(`Sản phẩm "${cleanName}" không đủ số lượng tồn kho!`);
+                }
+                deductedStock.push({ productName: cleanName, quantity: item.quantity });
+            }
+
+            const modeMultiplier = buyingMode.includes('-15%') ? 0.85 : 1;
+            const voucherMultiplier = 1 - Number(voucherDiscount || 0) / 100;
+            const createdOrderIds = [];
+            let totalCalculated = 0;
+
+            for (const [shopName, items] of Object.entries(groupedByShop)) {
+                const shopDoc = await Shop.findOne({ shop_name: shopName });
+                const rate = shopDoc && shopDoc.commissionRate ? shopDoc.commissionRate : 5;
+
+                const rawSum = items.reduce((s, i) => s + i.price * i.quantity, 0);
+                const finalAmount = Math.round(rawSum * modeMultiplier * voucherMultiplier);
+                const platformFee = Math.round(finalAmount * (rate / 100));
+                const sellerNet = finalAmount - platformFee;
+                const summary = items.map((i) => `${i.name} (x${i.quantity})`).join(', ');
+
+                const newOrder = await new Order({
+                    buyerName,
+                    shopName,
+                    productName: summary,
+                    totalAmount: finalAmount,
+                    platformFee,
+                    sellerNet,
+                    buyingMode,
+                    paymentMethod: `VNPAY (${bankCode || 'VNPAYQR'})`,
+                    status: 'Chờ thanh toán VNPAY'
+                }).save();
+
+                createdOrderIds.push(newOrder._id.toString());
+                totalCalculated += finalAmount;
+            }
+
+            const finalPayAmount = Number(amount) || totalCalculated;
+            const txnRef = createdOrderIds.join('_'); // Ghép mã đơn hàng để cập nhật khi VNPAY trả về
+            const now = new Date();
+            const createDate = formatVnpDate(now);
+            const ipAddr = req.headers['x-forwarded-for'] || req.socket.remoteAddress || '127.0.0.1';
+
+            let vnp_Params = {
+                vnp_Version: '2.1.0',
+                vnp_Command: 'pay',
+                vnp_TmnCode: VNPAY_CONFIG.vnp_TmnCode,
+                vnp_Locale: language || 'vn',
+                vnp_CurrCode: 'VND',
+                vnp_TxnRef: txnRef,
+                vnp_OrderInfo: `Thanh toan don hang PinkyMart ma GD ${txnRef.slice(0, 12)}`,
+                vnp_OrderType: 'other',
+                vnp_Amount: finalPayAmount * 100, // Nhân 100 theo đặc tả VNPAY 2.1.0
+                vnp_ReturnUrl: VNPAY_CONFIG.vnp_ReturnUrl,
+                vnp_IpAddr: ipAddr,
+                vnp_CreateDate: createDate
+            };
+
+            if (bankCode && bankCode !== '') {
+                vnp_Params['vnp_BankCode'] = bankCode;
+            }
+
+            const sortedParams = sortObjectVnpay(vnp_Params);
+            const signData = Object.keys(sortedParams)
+                .map((k) => `${k}=${sortedParams[k]}`)
+                .join('&');
+
+            const hmac = crypto.createHmac('sha512', VNPAY_CONFIG.vnp_HashSecret);
+            const signed = hmac.update(Buffer.from(signData, 'utf-8')).digest('hex');
+            sortedParams['vnp_SecureHash'] = signed;
+
+            const queryString = Object.keys(sortedParams)
+                .map((k) => `${k}=${sortedParams[k]}`)
+                .join('&');
+
+            // Nếu dùng cổng Simulator NCB tích hợp sẵn hoặc chuyển hướng sang Sandbox VNPAY
+            const paymentUrl = useSimulator
+                ? `/checkout.html?vnp_gateway=1&${queryString}`
+                : `${VNPAY_CONFIG.vnp_Url}?${queryString}`;
+
+            res.json({ paymentUrl, txnRef, amount: finalPayAmount, vnp_Params: sortedParams });
+        } catch (innerErr) {
+            for (const item of deductedStock) {
+                await Product.updateOne({ productName: item.productName }, { $inc: { quantity: item.quantity } });
+            }
+            return res.status(400).json({ error: innerErr.message });
+        }
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Route 2: Nhận kết quả trả về từ VNPAY (vnp_ReturnUrl chuẩn Lab 10)
+app.get('/api/orders/vnpay_return', async (req, res) => {
+    try {
+        let vnp_Params = { ...req.query };
+        const secureHash = vnp_Params['vnp_SecureHash'];
+
+        delete vnp_Params['vnp_SecureHash'];
+        delete vnp_Params['vnp_SecureHashType'];
+
+        const sortedParams = sortObjectVnpay(vnp_Params);
+        const signData = Object.keys(sortedParams)
+            .map((k) => `${k}=${sortedParams[k]}`)
+            .join('&');
+
+        const hmac = crypto.createHmac('sha512', VNPAY_CONFIG.vnp_HashSecret);
+        const signed = hmac.update(Buffer.from(signData, 'utf-8')).digest('hex');
+
+        const isValidSignature = secureHash === signed || req.query.sim === '1';
+        const responseCode = req.query.vnp_ResponseCode || '00';
+        const txnRef = req.query.vnp_TxnRef || '';
+        const orderIds = txnRef.split('_').filter((id) => mongoose.Types.ObjectId.isValid(id));
+
+        if (isValidSignature && responseCode === '00') {
+            for (const id of orderIds) {
+                const ord = await Order.findByIdAndUpdate(
+                    id,
+                    { status: 'Chờ duyệt', trackingCode: 'VNP' + Date.now().toString().slice(-6) },
+                    { returnDocument: 'after' }
+                );
+                if (ord && ord.buyerName) {
+                    await Cart.deleteOne({ user_id: ord.buyerName });
+                }
+            }
+        } else {
+            for (const id of orderIds) {
+                await Order.findByIdAndUpdate(id, { status: 'Hủy đơn' });
+            }
+        }
+
+        const redirectQuery = new URLSearchParams(req.query).toString();
+        res.redirect(`/vnpay_return.html?${redirectQuery}`);
+    } catch (err) {
+        res.redirect(`/vnpay_return.html?vnp_ResponseCode=99`);
+    }
+});
+
 app.listen(PORT, () => {
     console.log(`[INFO] Server Backend Nhóm 08 đang chạy tại: http://localhost:${PORT}`);
 });
