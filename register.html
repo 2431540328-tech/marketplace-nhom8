@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng Ký Tài Khoản Mới - PinkyMart</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body {
+            background: linear-gradient(135deg, #fff5f8 0%, #fce4ec 50%, #f3e5f5 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 25px 15px;
+            color: #4a148c;
+        }
+
+        .reg-container {
+            background: white;
+            width: 560px;
+            max-width: 100%;
+            border-radius: 28px;
+            border: 3px solid #f4acb7;
+            box-shadow: 0 15px 35px rgba(216, 27, 96, 0.15);
+            overflow: hidden;
+        }
+
+        .reg-header {
+            background: linear-gradient(135deg, #f4acb7 0%, #cdb4db 100%);
+            padding: 25px 30px;
+            text-align: center;
+            color: white;
+            border-bottom: 2px solid #ffffff;
+        }
+        .reg-header h1 { font-size: 24px; font-weight: 900; text-shadow: 1px 1px 3px rgba(74, 20, 140, 0.25); }
+        .reg-header p { font-size: 13px; color: #4a148c; font-weight: 700; margin-top: 5px; }
+
+        .reg-body { padding: 30px 34px; }
+
+        /* Chọn Vai Trò bằng Thẻ Trực Quan */
+        .role-selector {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .role-card {
+            border: 2px solid #f8bbd0;
+            border-radius: 16px;
+            padding: 14px;
+            text-align: center;
+            cursor: pointer;
+            background: #fffdfd;
+            transition: 0.2s;
+        }
+        .role-card:hover { background: #fff0f5; }
+        .role-card.active {
+            border-color: #d81b60;
+            background: #fce4ec;
+            box-shadow: 0 4px 12px rgba(216, 27, 96, 0.15);
+        }
+        .role-card .icon { font-size: 24px; margin-bottom: 4px; }
+        .role-card .title { font-size: 14px; font-weight: 900; color: #ad1457; }
+        .role-card .desc { font-size: 11px; color: #6a1b9a; font-weight: 600; margin-top: 2px; }
+
+        .alert-box {
+            padding: 11px 14px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: none;
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #f87171;
+        }
+
+        .grid-2-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        @media (max-width: 520px) { .grid-2-col { grid-template-columns: 1fr; } }
+
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 12.5px; font-weight: 800; color: #4a148c; margin-bottom: 5px; }
+        .form-control {
+            width: 100%;
+            padding: 11px 13px;
+            border-radius: 12px;
+            border: 2px solid #f4acb7;
+            outline: none;
+            font-size: 13.5px;
+            color: #4a148c;
+            background: #fffdfd;
+        }
+        .form-control:focus { border-color: #d81b60; background: white; }
+
+        .btn-register-submit {
+            width: 100%;
+            padding: 13px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #d81b60 0%, #8e24aa 100%);
+            color: white;
+            font-weight: 900;
+            font-size: 15px;
+            border: none;
+            cursor: pointer;
+            transition: 0.25s;
+            box-shadow: 0 6px 15px rgba(216, 27, 96, 0.28);
+            margin-top: 8px;
+        }
+        .btn-register-submit:hover { transform: translateY(-2px); opacity: 0.95; }
+
+        .footer-links {
+            margin-top: 18px;
+            text-align: center;
+            font-size: 13.5px;
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .footer-links a { color: #d81b60; text-decoration: none; font-weight: 900; }
+        .footer-links a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <div class="reg-container">
+        <div class="reg-header">
+            <h1>✨ ĐĂNG KÝ TÀI KHOẢN PINKYMART</h1>
+            <p>Tham gia mua sắm thông minh hoặc mở gian hàng kinh doanh miễn phí</p>
+        </div>
+
+        <div class="reg-body">
+            <div id="errorBox" class="alert-box"></div>
+
+            <label style="display:block; font-size:12.5px; font-weight:800; margin-bottom:8px;">
+                1. Chọn loại tài khoản bạn muốn đăng ký:
+            </label>
+            <div class="role-selector">
+                <div class="role-card active" id="cardBuyer" onclick="selectRole('Buyer')">
+                    <div class="icon">🛍️</div>
+                    <div class="title">Người Mua (Buyer)</div>
+                    <div class="desc">Mua sắm, trả giá & săn Sale</div>
+                </div>
+                <div class="role-card" id="cardSeller" onclick="selectRole('Seller')">
+                    <div class="icon">🏪</div>
+                    <div class="title">Người Bán (Seller)</div>
+                    <div class="desc">Mở Shop & đăng bán sản phẩm</div>
+                </div>
+            </div>
+            <input type="hidden" id="selectedRole" value="Buyer">
+
+            <div class="grid-2-col">
+                <div class="form-group">
+                    <label>Tên đăng nhập (Username) (*)</label>
+                    <input type="text" id="regUsername" class="form-control" placeholder="VD: levy_pinky">
+                </div>
+                <div class="form-group">
+                    <label>Họ và Tên đầy đủ (*)</label>
+                    <input type="text" id="regFullName" class="form-control" placeholder="VD: Nguyễn Lê Vy">
+                </div>
+            </div>
+
+            <div class="grid-2-col">
+                <div class="form-group">
+                    <label>Email liên hệ</label>
+                    <input type="email" id="regEmail" class="form-control" placeholder="example@gmail.com">
+                </div>
+                <div class="form-group">
+                    <label>Số điện thoại</label>
+                    <input type="text" id="regPhone" class="form-control" placeholder="0901234567">
+                </div>
+            </div>
+
+            <div class="grid-2-col">
+                <div class="form-group">
+                    <label>Mật khẩu (>= 6 ký tự) (*)</label>
+                    <input type="password" id="regPassword" class="form-control" placeholder="Nhập mật khẩu...">
+                </div>
+                <div class="form-group">
+                    <label>Nhập lại mật khẩu (*)</label>
+                    <input type="password" id="regConfirmPassword" class="form-control" placeholder="Xác nhận mật khẩu...">
+                </div>
+            </div>
+
+            <div id="sellerNoteBox" style="display:none; background:#fff0f5; border:1.5px dashed #d81b60; padding:10px 14px; border-radius:12px; font-size:12px; color:#ad1457; font-weight:700; margin-bottom:12px;">
+                🏪 <b>Lưu ý cho Người Bán (Seller):</b> Hệ thống sẽ tự động khởi tạo Gian hàng cho bạn và gửi hồ sơ KYC để Admin sàn phê duyệt!
+            </div>
+
+            <button class="btn-register-submit" onclick="submitRegister()">
+                ✨ Hoàn Tất Đăng Ký Tài Khoản
+            </button>
+
+            <div class="footer-links">
+                <a href="index.html">← Về Trang Chủ</a>
+                <span>Đã có tài khoản? <a href="login.html">Đăng nhập ngay</a></span>
+            </div>
+        </div>
+    </div>
+
+    <script src="auth.js"></script>
+    <script>
+        const API_BASE = 'http://localhost:5000/api';
+
+        // Tự động chọn tab Seller nếu bấm từ nút "Đăng ký bán hàng" ở trang chủ
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('role') === 'Seller') {
+            selectRole('Seller');
+        }
+
+        function selectRole(role) {
+            document.getElementById('selectedRole').value = role;
+            document.getElementById('cardBuyer').classList.toggle('active', role === 'Buyer');
+            document.getElementById('cardSeller').classList.toggle('active', role === 'Seller');
+            document.getElementById('sellerNoteBox').style.display = role === 'Seller' ? 'block' : 'none';
+        }
+
+        function showError(msg) {
+            const box = document.getElementById('errorBox');
+            box.innerText = msg;
+            box.style.display = 'block';
+        }
+
+        async function submitRegister() {
+            const username = document.getElementById('regUsername').value.trim();
+            const full_name = document.getElementById('regFullName').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const phone = document.getElementById('regPhone').value.trim();
+            const password = document.getElementById('regPassword').value;
+            const confirmPw = document.getElementById('regConfirmPassword').value;
+            const role = document.getElementById('selectedRole').value;
+
+            if (!username || !full_name || !password) {
+                return showError('Vui lòng nhập đầy đủ Tên đăng nhập, Họ tên và Mật khẩu!');
+            }
+            if (password.length < 6) {
+                return showError('Mật khẩu phải có ít nhất 6 ký tự!');
+            }
+            if (password !== confirmPw) {
+                return showError('Mật khẩu xác nhận không khớp!');
+            }
+
+            try {
+                const res = await fetch(`${API_BASE}/auth/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, full_name, email, phone, password, role })
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    return showError(data.error || 'Đăng ký không thành công!');
+                }
+
+                // Chuyển sang trang login kèm username vừa tạo
+                window.location.href = `login.html?registered=${encodeURIComponent(username)}`;
+            } catch (err) {
+                showError('Lỗi kết nối đến Server Backend!');
+            }
+        }
+    </script>
+</body>
+</html>

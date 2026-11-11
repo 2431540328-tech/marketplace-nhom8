@@ -1,4 +1,4 @@
-// auth.js
+// auth.js - Quản lý JWT Token, Phân quyền (RBAC) & Điều hướng thông minh
 (function (global) {
     const TOKEN_KEY = 'mkt_token';
     const USER_KEY  = 'mkt_user';
@@ -20,7 +20,13 @@
     function logout() {
         localStorage.removeItem(TOKEN_KEY);
         localStorage.removeItem(USER_KEY);
-        window.location.href = 'login.html'; // Đá về trang login
+        window.location.href = 'index.html'; // Đăng xuất về trang chủ khách vãng lai
+    }
+
+    function getDashboardByRole(role) {
+        if (role === 'Admin') return 'admin.html';
+        if (role === 'Seller') return 'seller.html';
+        return 'buyer.html';
     }
 
     function apiFetch(url, options = {}) {
@@ -33,23 +39,20 @@
         return fetch(url, { ...options, headers });
     }
 
-    // Hàm bảo vệ trang: Kiểm tra xem có được phép vào trang này không
+    // Bảo vệ các trang cần đăng nhập (buyer.html, seller.html, admin.html)
     function requireAuth(allowedRoles = []) {
         const user = getUser();
         if (!user || !getToken()) {
-            window.location.href = 'login.html'; // Chưa đăng nhập -> về login
+            window.location.href = 'login.html';
             return null;
         }
         if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
-            alert('Bạn không có quyền truy cập trang này!');
-            // Đá về đúng trang của role đó
-            if (user.role === 'Admin') window.location.href = 'admin.html';
-            else if (user.role === 'Seller') window.location.href = 'seller.html';
-            else window.location.href = 'buyer.html';
+            alert('Bạn không có quyền truy cập phân hệ này!');
+            window.location.href = getDashboardByRole(user.role);
             return null;
         }
         return user;
     }
 
-    global.Auth = { saveAuth, getToken, getUser, logout, apiFetch, requireAuth };
+    global.Auth = { saveAuth, getToken, getUser, logout, getDashboardByRole, apiFetch, requireAuth };
 })(window);
