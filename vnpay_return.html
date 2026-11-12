@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kết Quả Giao Dịch Thanh Toán - PinkyMart</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body {
+            background: linear-gradient(135deg, #fff5f8 0%, #fce4ec 50%, #f3e5f5 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #4a148c;
+        }
+        .return-card {
+            background: white;
+            width: 540px;
+            max-width: 100%;
+            border-radius: 26px;
+            border: 3px solid #f4acb7;
+            padding: 36px 32px;
+            text-align: center;
+            box-shadow: 0 15px 35px rgba(216, 27, 96, 0.16);
+            animation: popIn 0.3s ease;
+        }
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        .status-icon {
+            width: 76px;
+            height: 76px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 38px;
+            margin: 0 auto 16px;
+            font-weight: 900;
+        }
+        .icon-ok { background: #dcfce7; color: #16a34a; border: 2.5px solid #4ade80; }
+        .icon-fail { background: #fee2e2; color: #dc2626; border: 2.5px solid #f87171; }
+
+        .detail-box {
+            background: #fff0f5;
+            border: 1.5px solid #f4acb7;
+            border-radius: 16px;
+            padding: 18px 20px;
+            margin: 22px 0;
+            text-align: left;
+            font-size: 13.5px;
+            line-height: 1.8;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px dashed #f8bbd0;
+            padding: 6px 0;
+            gap: 10px;
+        }
+        .detail-row span { color: #6a1b9a; font-weight: 600; }
+        .detail-row b { text-align: right; word-break: break-all; }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .btn-action {
+            flex: 1;
+            min-width: 190px;
+            padding: 12px 20px;
+            border-radius: 14px;
+            text-decoration: none;
+            font-weight: 900;
+            font-size: 14px;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .btn-action:hover { transform: translateY(-2px); opacity: 0.95; }
+        .btn-primary {
+            background: linear-gradient(135deg, #d81b60 0%, #8e24aa 100%);
+            color: white;
+            box-shadow: 0 5px 14px rgba(216, 27, 96, 0.28);
+        }
+        .btn-secondary {
+            background: #fff0f5;
+            color: #d81b60;
+            border: 2px solid #f4acb7;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="return-card">
+        <div id="statusIcon" class="status-icon icon-ok">✔</div>
+        <h2 id="statusTitle" style="font-size:24px; font-weight:900; margin-bottom:6px;">Thanh toán thành công!</h2>
+        <p id="statusDesc" style="font-size:13.5px; color:#6a1b9a; font-weight:700; line-height:1.5;"></p>
+
+        <div class="detail-box">
+            <div class="detail-row">
+                <span>Mã tham chiếu (vnp_TxnRef):</span>
+                <b id="resTxnRef" style="color:#4a148c; font-family:monospace;"></b>
+            </div>
+            <div class="detail-row">
+                <span>Số tiền thanh toán:</span>
+                <b id="resAmount" style="color:#d81b60; font-size:16px;"></b>
+            </div>
+            <div class="detail-row">
+                <span>Phương thức / Ngân hàng:</span>
+                <b id="resBank" style="color:#8e24aa;"></b>
+            </div>
+            <div class="detail-row">
+                <span>Mã phản hồi (vnp_ResponseCode):</span>
+                <b id="resCode"></b>
+            </div>
+            <div class="detail-row" style="border-bottom:none;">
+                <span>Nội dung thanh toán:</span>
+                <b id="resInfo" style="color:#333;"></b>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <a href="buyer.html" class="btn-action btn-primary">🛍️ Tiếp tục mua hàng</a>
+            <a href="buyer.html" onclick="localStorage.setItem('open_orders', '1')" class="btn-action btn-secondary">📦 Xem đơn hàng đã đặt</a>
+        </div>
+    </div>
+
+    <script>
+        // Bảng mã phản hồi chuẩn Đặc tả VNPAY v2.1.0
+        const VNP_ERROR_MESSAGES = {
+            '00': 'Giao dịch thanh toán thành công! Đơn hàng đã được tự động tách theo từng Gian hàng (Shop) và xóa giỏ hàng.',
+            '05': 'Giao dịch không thành công do: Tài khoản của quý khách không đủ số dư.',
+            '06': 'Giao dịch không thành công do: Quý khách nhập sai mật khẩu xác thực giao dịch (OTP).',
+            '07': 'Trừ tiền thành công nhưng giao dịch bị nghi ngờ gian lận, cần Admin xác nhận.',
+            '09': 'Giao dịch không thành công do: Thẻ/Tài khoản chưa đăng ký dịch vụ Internet Banking.',
+            '11': 'Giao dịch không thành công do: Đã hết hạn chờ thanh toán.',
+            '24': 'Giao dịch không thành công do: Khách hàng đã hủy giao dịch thanh toán.',
+            '97': 'Chữ ký bảo mật (vnp_SecureHash) không hợp lệ!',
+            '99': 'Có lỗi xảy ra trong quá trình xử lý giao dịch.'
+        };
+
+        const params = new URLSearchParams(window.location.search);
+        const code = params.get('vnp_ResponseCode') || '00';
+        const txnRef = params.get('vnp_TxnRef') || ('GD_' + Date.now());
+        const rawAmt = Number(params.get('vnp_Amount') || 0) / 100; // Chia 100 theo chuẩn vnp_Amount của VNPAY
+        const bank = params.get('vnp_BankCode') || 'VNPAYQR';
+        const info = decodeURIComponent((params.get('vnp_OrderInfo') || 'Thanh toan don hang PinkyMart').replace(/\+/g, ' '));
+
+        const iconEl = document.getElementById('statusIcon');
+        const titleEl = document.getElementById('statusTitle');
+        const descEl = document.getElementById('statusDesc');
+
+        if (code === '00') {
+            iconEl.className = 'status-icon icon-ok';
+            iconEl.innerText = '✔';
+            titleEl.style.color = '#16a34a';
+            titleEl.innerText = 'Thanh toán thành công!';
+        } else {
+            iconEl.className = 'status-icon icon-fail';
+            iconEl.innerText = '✖';
+            titleEl.style.color = '#dc2626';
+            titleEl.innerText = 'Giao dịch không thành công!';
+        }
+
+        descEl.innerText = VNP_ERROR_MESSAGES[code] || 'Giao dịch không thành công.';
+        document.getElementById('resTxnRef').innerText = txnRef.length > 26 ? txnRef.slice(0, 26) + '...' : txnRef;
+        document.getElementById('resAmount').innerText = rawAmt.toLocaleString('vi-VN') + ' VNĐ';
+        document.getElementById('resBank').innerText = bank === 'MOMO' ? '🌸 Ví Điện Tử MoMo' : `🏦 ${bank}`;
+        document.getElementById('resCode').innerText = `${code} (${code === '00' ? 'Success' : 'Failed'})`;
+        document.getElementById('resInfo').innerText = info;
+    </script>
+</body>
+</html>

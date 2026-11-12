@@ -1150,9 +1150,14 @@ app.post('/api/orders/create_payment_url', authenticate, async (req, res) => {
                 .join('&');
 
             // Nếu dùng cổng Simulator NCB tích hợp sẵn hoặc chuyển hướng sang Sandbox VNPAY
-            const paymentUrl = useSimulator
-                ? `/checkout.html?vnp_gateway=1&${queryString}`
-                : `${VNPAY_CONFIG.vnp_Url}?${queryString}`;
+             // Trong route app.post('/api/orders/create_payment_url') của server.js:
+// Thay đoạn const paymentUrl = useSimulator ? ... bằng đoạn này:
+
+const paymentUrl = useSimulator
+    ? `http://localhost:${PORT}/api/orders/vnpay_return?${queryString}&vnp_ResponseCode=00&vnp_TransactionStatus=00&sim=1`
+    : `${VNPAY_CONFIG.vnp_Url}?${queryString}`;
+
+res.json({ paymentUrl, txnRef, amount: finalPayAmount, vnp_Params: sortedParams });
 
             res.json({ paymentUrl, txnRef, amount: finalPayAmount, vnp_Params: sortedParams });
         } catch (innerErr) {

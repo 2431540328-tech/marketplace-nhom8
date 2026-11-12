@@ -3,22 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Thanh Toán Đơn Hàng & Cổng VNPAY - PinkyMart</title>
+    <title>Thanh Toán Đơn Hàng (MoMo & VNPAYQR) - PinkyMart</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         body { background-color: #fff5f8; color: #4a148c; }
 
+        /* Navbar đồng bộ */
         .navbar {
-            background: rgba(255, 255, 255, 0.94);
+            background: rgba(255, 255, 255, 0.95);
             padding: 14px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 2px solid #f4acb7;
+            box-shadow: 0 4px 12px rgba(244, 172, 183, 0.2);
         }
         .brand-logo {
             text-decoration: none;
-            font-size: 24px;
+            font-size: 23px;
             font-weight: 900;
             background: linear-gradient(135deg, #d81b60, #8e24aa);
             -webkit-background-clip: text;
@@ -33,30 +35,32 @@
             text-decoration: none;
             font-weight: 800;
             font-size: 13.5px;
+            transition: 0.2s;
         }
+        .btn-back:hover { background: #d81b60; color: white; border-color: #d81b60; }
 
-        .container { max-width: 1180px; margin: 28px auto; padding: 0 20px; }
+        .container { max-width: 1060px; margin: 28px auto; padding: 0 20px; }
 
         .checkout-grid {
             display: grid;
-            grid-template-columns: 1.25fr 1fr;
+            grid-template-columns: 1.15fr 1fr;
             gap: 24px;
+            align-items: start;
         }
-        @media (max-width: 950px) { .checkout-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 880px) { .checkout-grid { grid-template-columns: 1fr; } }
 
         .card-box {
             background: white;
             border: 2px solid #f4acb7;
             border-radius: 22px;
             padding: 24px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 15px rgba(244, 172, 183, 0.15);
+            box-shadow: 0 6px 18px rgba(244, 172, 183, 0.16);
         }
         .card-title {
             color: #ad1457;
             font-size: 18px;
             font-weight: 900;
-            margin-bottom: 16px;
+            margin-bottom: 18px;
             border-bottom: 2px dashed #f4acb7;
             padding-bottom: 10px;
             display: flex;
@@ -64,11 +68,11 @@
             align-items: center;
         }
 
-        .form-group { margin-bottom: 14px; }
+        .form-group { margin-bottom: 15px; }
         .form-group label { display: block; font-size: 13px; font-weight: 800; color: #4a148c; margin-bottom: 6px; }
         .form-control {
             width: 100%;
-            padding: 10px 14px;
+            padding: 11px 14px;
             border-radius: 12px;
             border: 1.5px solid #f4acb7;
             outline: none;
@@ -76,103 +80,136 @@
             color: #4a148c;
             background: #fffdfd;
         }
+        .form-control:focus { border-color: #d81b60; background: white; }
 
-        /* Radio chọn phương thức VNPAY chuẩn Lab 10 */
-        .radio-group { display: flex; flex-direction: column; gap: 10px; }
-        .radio-option {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px 14px;
-            border-radius: 14px;
-            border: 2px solid #f8bbd0;
+        /* 2 Thẻ chọn Phương thức Thanh toán: VNPAYQR & MoMo */
+        .payment-methods {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+        .method-card {
+            border: 2.5px solid #f8bbd0;
+            border-radius: 16px;
+            padding: 16px 12px;
+            text-align: center;
             cursor: pointer;
             background: #fffdfd;
-            font-weight: 700;
-            font-size: 13.5px;
-            transition: 0.2s;
+            transition: all 0.2s ease;
+            position: relative;
         }
-        .radio-option:hover, .radio-option.selected {
+        .method-card:hover { transform: translateY(-2px); background: #fff0f5; }
+        .method-card.active {
             border-color: #d81b60;
-            background: #fff0f5;
-        }
-
-        .vnpay-test-card {
-            background: #fff9fb;
-            border: 2px dashed #d81b60;
-            border-radius: 16px;
-            padding: 15px;
-            margin-top: 15px;
-            font-size: 13px;
-            line-height: 1.6;
-        }
-        .code-pill {
             background: #fce4ec;
-            color: #ad1457;
-            padding: 2px 8px;
-            border-radius: 6px;
-            font-family: monospace;
+            box-shadow: 0 5px 14px rgba(216, 27, 96, 0.18);
+        }
+        .method-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-size: 11px;
             font-weight: 900;
-            cursor: pointer;
+            margin-bottom: 6px;
         }
+        .badge-vnpay { background: #e0f2fe; color: #0369a1; }
+        .badge-momo { background: #fce7f3; color: #be185d; }
+        .method-name { font-size: 15px; font-weight: 900; color: #4a148c; }
+        .method-desc { font-size: 11.5px; color: #6a1b9a; margin-top: 3px; font-weight: 600; }
 
-        .btn-pay {
-            width: 100%;
-            padding: 14px;
-            border-radius: 14px;
-            font-weight: 900;
-            font-size: 15px;
-            border: none;
-            cursor: pointer;
-            transition: 0.2s;
-            margin-top: 10px;
+        /* Khung hiển thị QR Code trực quan */
+        .qr-preview-box {
+            background: linear-gradient(135deg, #fff0f5 0%, #f3e5f5 100%);
+            border: 2px dashed #d81b60;
+            border-radius: 18px;
+            padding: 18px;
+            text-align: center;
+            margin-bottom: 18px;
         }
-        .btn-vnpay-primary {
-            background: linear-gradient(135deg, #d81b60 0%, #8e24aa 100%);
-            color: white;
-            box-shadow: 0 6px 16px rgba(216, 27, 96, 0.3);
-        }
-        .btn-vnpay-sandbox {
-            background: #fff0f5;
-            color: #d81b60;
-            border: 2px solid #d81b60;
-        }
-
-        /* GIAO DIỆN CỔNG THANH TOÁN VNPAY - NGÂN HÀNG NCB (CHUẨN HÌNH TRANG 15-16 LAB 10) */
-        .vnpay-gateway-screen {
-            display: none;
-            max-width: 860px;
-            margin: 20px auto;
+        .qr-img {
+            width: 175px;
+            height: 175px;
+            object-fit: contain;
             background: white;
-            border-radius: 22px;
-            border: 3px solid #f4acb7;
-            box-shadow: 0 15px 40px rgba(74, 20, 140, 0.18);
-            overflow: hidden;
+            padding: 10px;
+            border-radius: 14px;
+            border: 2px solid #f4acb7;
+            margin: 10px auto;
+            display: block;
         }
-        .vnp-top-bar {
-            background: linear-gradient(135deg, #f4acb7 0%, #cdb4db 100%);
-            padding: 16px 28px;
+
+        /* Danh sách sản phẩm bên phải */
+        .order-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            color: #4a148c;
-            font-weight: 900;
-        }
-        .vnp-body {
-            display: grid;
-            grid-template-columns: 1fr 1.45fr;
-            padding: 28px;
-            gap: 28px;
-        }
-        @media (max-width: 760px) { .vnp-body { grid-template-columns: 1fr; } }
-        .vnp-order-info {
-            background: #fff0f5;
-            padding: 20px;
-            border-radius: 16px;
-            border: 1.5px solid #f4acb7;
+            padding: 10px 0;
+            border-bottom: 1px dashed #f8bbd0;
             font-size: 13.5px;
-            line-height: 1.7;
         }
+        .shop-pill {
+            display: inline-block;
+            background: #f3e5f5;
+            color: #6a1b9a;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 2px 8px;
+            border-radius: 8px;
+            margin-top: 3px;
+        }
+        .total-box {
+            background: #fff0f5;
+            border: 1.5px solid #f4acb7;
+            border-radius: 14px;
+            padding: 15px;
+            margin-top: 16px;
+        }
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13.5px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .total-final {
+            display: flex;
+            justify-content: space-between;
+            font-size: 19px;
+            font-weight: 900;
+            color: #d81b60;
+            padding-top: 10px;
+            border-top: 2px dashed #f4acb7;
+        }
+
+        .btn-confirm-pay {
+            width: 100%;
+            padding: 14px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #d81b60 0%, #8e24aa 100%);
+            color: white;
+            font-weight: 900;
+            font-size: 15.5px;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 6px 16px rgba(216, 27, 96, 0.3);
+            transition: 0.2s;
+        }
+        .btn-confirm-pay:hover { transform: translateY(-2px); opacity: 0.95; }
+
+        .btn-sandbox-link {
+            width: 100%;
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 12px;
+            background: white;
+            color: #ad1457;
+            border: 1.5px solid #f4acb7;
+            font-weight: 800;
+            font-size: 12.5px;
+            cursor: pointer;
+        }
+        .btn-sandbox-link:hover { background: #fff0f5; border-color: #d81b60; }
     </style>
 </head>
 <body>
@@ -183,154 +220,93 @@
     </nav>
 
     <div class="container">
+        <div class="checkout-grid">
 
-        <!-- MÀN HÌNH 1: FORM TẠO ĐƠN HÀNG & CHỌN PHƯƠNG THỨC VNPAY (CHUẨN LAB 10) -->
-        <div id="checkoutMainView" class="checkout-grid">
-            <div>
-                <div class="card-box">
-                    <h3 class="card-title">
-                        <span>🏦 Tạo Mới Đơn Hàng & Chọn Phương Thức Thanh Toán (Lab 10)</span>
-                        <span style="font-size:12px; color:#6a1b9a;">vnp_Version: 2.1.0</span>
-                    </h3>
+            <!-- CỘT TRÁI: THÔNG TIN NHẬN HÀNG & CHỌN PHƯƠNG THỨC (MOMO / VNPAYQR) -->
+            <div class="card-box">
+                <h3 class="card-title">
+                    <span>💳 Phương Thức Thanh Toán</span>
+                    <span style="font-size:12px; color:#6a1b9a;">MoMo & VNPAYQR</span>
+                </h3>
 
-                    <div class="form-group">
-                        <label>Số tiền thanh toán (name: amount)</label>
-                        <input type="number" id="vnpAmountInput" class="form-control" readonly style="font-size:18px; font-weight:900; color:#d81b60;">
+                <div class="form-group">
+                    <label>Người nhận & Địa chỉ giao hàng:</label>
+                    <input type="text" id="billAddress" class="form-control" value="Học Viện Hàng Không Việt Nam - TP. Hồ Chí Minh">
+                </div>
+
+                <label style="display:block; font-size:13px; font-weight:800; margin-bottom:8px;">
+                    Chọn 1 trong 2 phương thức thanh toán trực tuyến:
+                </label>
+
+                <div class="payment-methods">
+                    <!-- Option 1: VNPAYQR -->
+                    <div class="method-card active" id="cardVNPAYQR" onclick="selectPaymentMethod('VNPAYQR')">
+                        <span class="method-badge badge-vnpay">VNPAY-QR</span>
+                        <div class="method-name">📱 Cổng VNPAYQR</div>
+                        <div class="method-desc">Quét mã QR Ngân hàng / Ví VNPAY</div>
                     </div>
 
-                    <div class="form-group">
-                        <label>Chọn Phương thức thanh toán (name: bankCode):</label>
-                        <div class="radio-group">
-                            <label class="radio-option selected">
-                                <input type="radio" name="bankCode" value="NCB" checked onchange="highlightRadio(this)">
-                                <span>🏧 Thanh toán qua ATM - Tài khoản ngân hàng nội địa (Ngân hàng NCB Test)</span>
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="bankCode" value="VNPAYQR" onchange="highlightRadio(this)">
-                                <span>📱 Thanh toán bằng ứng dụng hỗ trợ VNPAYQR</span>
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="bankCode" value="INTCARD" onchange="highlightRadio(this)">
-                                <span>💳 Thanh toán qua Thẻ quốc tế (Visa / MasterCard / JCB)</span>
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="bankCode" value="" onchange="highlightRadio(this)">
-                                <span>🌐 Cổng thanh toán VNPAYQR (Tự chọn ngân hàng tại VNPAY)</span>
-                            </label>
-                            <label class="radio-option">
-                                <input type="radio" name="bankCode" value="COD" onchange="highlightRadio(this)">
-                                <span>💵 Thanh toán tiền mặt khi nhận hàng (COD)</span>
-                            </label>
-                        </div>
+                    <!-- Option 2: MoMo -->
+                    <div class="method-card" id="cardMOMO" onclick="selectPaymentMethod('MOMO')">
+                        <span class="method-badge badge-momo">MoMo Wallet</span>
+                        <div class="method-name">🌸 Ví Điện Tử MoMo</div>
+                        <div class="method-desc">Siêu ứng dụng thanh toán MoMo</div>
                     </div>
+                </div>
 
-                    <div class="form-group">
-                        <label>Thông tin Hóa đơn / Giao hàng (vnp_Bill_Address & vnp_OrderInfo):</label>
-                        <input type="text" id="billAddress" class="form-control" value="Học Viện Hàng Không Việt Nam - TP. Hồ Chí Minh">
+                <input type="hidden" id="selectedMethod" value="VNPAYQR">
+
+                <!-- Khung Mã QR Tự Động Theo Phương Thức & Số Tiền -->
+                <div class="qr-preview-box">
+                    <div style="font-weight:900; font-size:14.5px; color:#ad1457;" id="qrHeaderTitle">
+                        📱 MÃ QUÉT THANH TOÁN CỔNG VNPAY-QR
                     </div>
-
-                    <div class="form-group">
-                        <label>Ngôn ngữ hiển thị (name: language):</label>
-                        <div style="display:flex; gap:20px; font-size:14px; font-weight:700; margin-top:4px;">
-                            <label><input type="radio" name="language" value="vn" checked> 🇻🇳 Tiếng Việt (vn)</label>
-                            <label><input type="radio" name="language" value="en"> 🇬🇧 Tiếng Anh (en)</label>
-                        </div>
+                    <img id="qrCodeImage" class="qr-img" src="" alt="QR Thanh Toán">
+                    <div style="font-size:13px; font-weight:800; color:#4a148c;">
+                        Số tiền: <span id="qrAmountText" style="color:#d81b60; font-size:16px;">0 ₫</span>
                     </div>
+                    <div style="font-size:11.5px; color:#6a1b9a; margin-top:4px;" id="qrSubNote">
+                        Chuẩn đặc tả VNPAY v2.1.0 (HMAC-SHA512 Checksum)
+                    </div>
+                </div>
 
-                    <button class="btn-pay btn-vnpay-primary" onclick="handleVnpayCheckout(true)">
-                        💳 Thanh Toán Qua Cổng VNPAY - Ngân Hàng NCB (Demo Trực Tiếp Lab 10)
-                    </button>
-                    <button class="btn-pay btn-vnpay-sandbox" onclick="handleVnpayCheckout(false)">
-                        🌐 Chuyển Hướng Sang URL Sandbox VNPAY Thực Tế (sandbox.vnpayment.vn)
-                    </button>
+                <!-- Nút xác nhận thanh toán chính -->
+                <button class="btn-confirm-pay" id="btnMainPay" onclick="processPayment(true)">
+                    ✅ Xác Nhận Đã Quét Mã & Hoàn Tất Thanh Toán
+                </button>
+
+                <!-- Nút phụ mở cổng Sandbox VNPAY thực tế nếu thầy/cô muốn xem trang sandbox.vnpayment.vn -->
+                <button class="btn-sandbox-link" id="btnSandboxRedirect" onclick="processPayment(false)">
+                    🌐 Hoặc mở trang Cổng VNPAY Sandbox thực tế (sandbox.vnpayment.vn) →
+                </button>
+            </div>
+
+            <!-- CỘT PHẢI: TÓM TẮT ĐƠN HÀNG & TÁCH SHOP -->
+            <div class="card-box">
+                <h3 class="card-title">
+                    <span>📦 Đơn Hàng Của Bạn</span>
+                    <span id="shopCountBadge" class="shop-pill">Tự tách đơn theo Shop</span>
+                </h3>
+
+                <div id="orderItemsList"></div>
+
+                <div class="total-box">
+                    <div class="total-row">
+                        <span>Chế độ mua:</span>
+                        <span id="summaryMode" style="color:#6a1b9a;">Mua lẻ</span>
+                    </div>
+                    <div class="total-row">
+                        <span>Ưu đãi Voucher Sàn:</span>
+                        <span id="summaryVoucher" style="color:#2e7d32;">0%</span>
+                    </div>
+                    <div class="total-final">
+                        <span>Tổng thanh toán:</span>
+                        <span id="summaryTotal">0 ₫</span>
+                    </div>
                 </div>
             </div>
 
-            <!-- CỘT PHẢI: THÔNG TIN THẺ TEST VNPAY & CHI TIẾT ĐƠN TÁCH SHOP -->
-            <div>
-                <div class="card-box">
-                    <h3 class="card-title">🧪 Thông Tin Thẻ Test VNPAY (Chuẩn Lab 10 Trang 15)</h3>
-                    <div class="vnpay-test-card">
-                        <div>🏦 <b>Ngân hàng:</b> <span class="code-pill">NCB</span></div>
-                        <div>💳 <b>Số thẻ:</b> <span class="code-pill" onclick="navigator.clipboard.writeText('9704198526191432198')">9704198526191432198</span></div>
-                        <div>👤 <b>Tên chủ thẻ:</b> <span class="code-pill">NGUYEN VAN A</span></div>
-                        <div>📅 <b>Ngày phát hành:</b> <span class="code-pill">07/15</span></div>
-                        <div>🔑 <b>Mật khẩu OTP:</b> <span class="code-pill">123456</span></div>
-                    </div>
-                </div>
-
-                <div class="card-box">
-                    <h3 class="card-title">📦 Sản Phẩm Sẽ Được Tách Đơn Theo Shop</h3>
-                    <div id="checkoutItemsPreview" style="font-size:13.5px;"></div>
-                </div>
-            </div>
         </div>
-
-        <!-- MÀN HÌNH 2: CỔNG THANH TOÁN VNPAY - NGÂN HÀNG NCB & XÁC THỰC OTP (GIỐNG TRANG 15-16 LAB 10) -->
-        <div id="vnpayGatewayView" class="vnpay-gateway-screen">
-            <div class="vnp-top-bar">
-                <span>🏦 CỔNG THANH TOÁN VNPAY - NGÂN HÀNG NCB (TEST ENVIRONMENT)</span>
-                <span style="background:white; padding:4px 10px; border-radius:10px; font-size:12px;">⏳ Giao dịch hết hạn sau: 14:52</span>
-            </div>
-
-            <div class="vnp-body">
-                <!-- Cột thông tin đơn hàng bên trái -->
-                <div class="vnp-order-info">
-                    <h4 style="color:#ad1457; margin-bottom:10px;">Thông tin đơn hàng (Test)</h4>
-                    <div>Số tiền thanh toán:</div>
-                    <div style="font-size:22px; font-weight:900; color:#d81b60; margin-bottom:10px;" id="gwDisplayAmount">0 VND</div>
-                    <div><b>Mã đơn hàng (vnp_TxnRef):</b></div>
-                    <div style="font-family:monospace; word-break:break-all; color:#4a148c; margin-bottom:10px;" id="gwDisplayTxnRef"></div>
-                    <div><b>Nội dung (vnp_OrderInfo):</b></div>
-                    <div id="gwDisplayOrderInfo" style="margin-bottom:10px;"></div>
-                    <div><b>Nhà cung cấp:</b> PinkyMart Multi-Vendor</div>
-                    <div style="margin-top:8px; font-size:11px; color:#6a1b9a; word-break:break-all;">
-                        <b>HMAC-SHA512 Checksum:</b> <span id="gwDisplayHash"></span>
-                    </div>
-                </div>
-
-                <!-- Cột nhập thẻ NCB & OTP bên phải -->
-                <div>
-                    <!-- Bước 1: Nhập thông tin thẻ nội địa NCB -->
-                    <div id="stepCardInput">
-                        <h3 style="color:#4a148c; margin-bottom:14px;">Thanh toán qua Ngân hàng NCB (Thẻ nội địa)</h3>
-                        <div class="form-group">
-                            <label>Số thẻ (Card Number)</label>
-                            <input type="text" id="ncbCardNumber" class="form-control" value="9704198526191432198">
-                        </div>
-                        <div class="form-group">
-                            <label>Tên chủ thẻ (Cardholder Name)</label>
-                            <input type="text" id="ncbCardHolder" class="form-control" value="NGUYEN VAN A">
-                        </div>
-                        <div class="form-group">
-                            <label>Ngày phát hành (Issue Date)</label>
-                            <input type="text" id="ncbCardDate" class="form-control" value="07/15">
-                        </div>
-                        <div style="display:flex; gap:10px; margin-top:18px;">
-                            <button class="btn-pay btn-vnpay-sandbox" style="flex:1;" onclick="cancelVnpayGateway()">Hủy thanh toán</button>
-                            <button class="btn-pay btn-vnpay-primary" style="flex:1.4;" onclick="goToOtpStep()">Tiếp tục →</button>
-                        </div>
-                    </div>
-
-                    <!-- Bước 2: Nhập OTP (Giống trang 16 Lab 10) -->
-                    <div id="stepOtpInput" style="display:none;">
-                        <h3 style="color:#4a148c; margin-bottom:10px;">🔑 Xác thực OTP</h3>
-                        <p style="font-size:13px; color:#6a1b9a; margin-bottom:15px;">
-                            OTP đã được gửi về số điện thoại đăng ký. Quý khách vui lòng nhập OTP để tiếp tục thực hiện giao dịch (OTP mẫu: <b>123456</b>).
-                        </p>
-                        <div class="form-group">
-                            <label>Mã xác thực OTP</label>
-                            <input type="text" id="ncbOtpValue" class="form-control" value="123456" style="font-size:18px; font-weight:900; letter-spacing:4px; text-align:center;">
-                        </div>
-                        <div style="display:flex; gap:10px; margin-top:18px;">
-                            <button class="btn-pay btn-vnpay-sandbox" style="flex:1;" onclick="cancelVnpayGateway()">Hủy</button>
-                            <button class="btn-pay btn-vnpay-primary" style="flex:1.4;" onclick="confirmVnpayOtp()">✅ Xác Nhận Thanh Toán</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
     </div>
 
     <script src="auth.js"></script>
@@ -339,140 +315,143 @@
         const buyer = Auth.requireAuth(['Buyer', 'Seller', 'Admin']);
 
         let checkoutMeta = { buyingMode: 'Mua lẻ', voucherDiscount: 0, amount: 0 };
-        let currentVnpParams = null;
+        let cartItems = [];
+        let finalPayAmount = 0;
 
-        function highlightRadio(el) {
-            document.querySelectorAll('.radio-option').forEach(r => r.classList.remove('selected'));
-            el.closest('.radio-option').classList.add('selected');
+        function selectPaymentMethod(method) {
+            document.getElementById('selectedMethod').value = method;
+            document.getElementById('cardVNPAYQR').classList.toggle('active', method === 'VNPAYQR');
+            document.getElementById('cardMOMO').classList.toggle('active', method === 'MOMO');
+
+            const btnSandbox = document.getElementById('btnSandboxRedirect');
+            if (method === 'VNPAYQR') {
+                document.getElementById('qrHeaderTitle').innerText = '📱 MÃ QUÉT THANH TOÁN CỔNG VNPAY-QR';
+                document.getElementById('qrSubNote').innerText = 'Chuẩn đặc tả VNPAY v2.1.0 (vnp_BankCode = VNPAYQR)';
+                btnSandbox.style.display = 'block';
+            } else {
+                document.getElementById('qrHeaderTitle').innerText = '🌸 MÃ QUÉT THANH TOÁN VÍ ĐIỆN TỬ MOMO';
+                document.getElementById('qrSubNote').innerText = 'Quét bằng ứng dụng MoMo để thanh toán tức thì';
+                btnSandbox.style.display = 'none';
+            }
+            updateQrImage();
         }
 
-        async function initCheckoutPage() {
-            // Kiểm tra nếu đang ở chế độ hiển thị cổng VNPAY NCB
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('vnp_gateway') === '1') {
-                document.getElementById('checkoutMainView').style.display = 'none';
-                document.getElementById('vnpayGatewayView').style.display = 'block';
+        function updateQrImage() {
+            const method = document.getElementById('selectedMethod').value;
+            const qrData = encodeURIComponent(`PINKYMART|${method}|AMOUNT:${finalPayAmount}|USER:${buyer ? buyer.username : 'GUEST'}`);
+            const color = method === 'MOMO' ? 'ad1457' : '0369a1';
+            document.getElementById('qrCodeImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&color=${color}&data=${qrData}`;
+            document.getElementById('qrAmountText').innerText = finalPayAmount.toLocaleString('vi-VN') + ' ₫';
+        }
 
-                const rawAmt = Number(urlParams.get('vnp_Amount') || 0) / 100;
-                document.getElementById('gwDisplayAmount').innerText = rawAmt.toLocaleString('vi-VN') + ' VND';
-                document.getElementById('gwDisplayTxnRef').innerText = urlParams.get('vnp_TxnRef') || '';
-                document.getElementById('gwDisplayOrderInfo').innerText = decodeURIComponent((urlParams.get('vnp_OrderInfo') || '').replace(/\+/g, ' '));
-                document.getElementById('gwDisplayHash').innerText = (urlParams.get('vnp_SecureHash') || '').slice(0, 48) + '...';
-                return;
-            }
+        async function initCheckout() {
+            // Lấy thông tin địa chỉ của Buyer
+            try {
+                const meRes = await Auth.apiFetch(`${API_BASE}/auth/me`);
+                if (meRes.ok) {
+                    const { user } = await meRes.json();
+                    if (user) {
+                        document.getElementById('billAddress').value = `${user.full_name || user.username} (${user.phone || '0901234567'}) - ${user.address || 'Học Viện Hàng Không Việt Nam'}`;
+                    }
+                }
+            } catch (e) {}
 
+            // Đọc thông tin ưu đãi từ trang Giỏ hàng truyền sang
             try {
                 const saved = JSON.parse(localStorage.getItem('mkt_checkout_meta') || 'null');
                 if (saved) checkoutMeta = saved;
             } catch (e) {}
 
+            // Tải giỏ hàng từ Backend
             const res = await Auth.apiFetch(`${API_BASE}/cart`);
             const cart = await res.json();
-            const items = cart.items || [];
+            cartItems = cart.items || [];
 
-            if (items.length === 0) {
-                document.getElementById('checkoutItemsPreview').innerHTML = `<p style="color:#888;">Giỏ hàng trống. <a href="buyer.html">Quay lại mua hàng</a></p>`;
+            const listEl = document.getElementById('orderItemsList');
+            if (cartItems.length === 0) {
+                listEl.innerHTML = `
+                    <div style="text-align:center; padding:25px 10px; color:#888;">
+                        <p style="margin-bottom:10px;">Giỏ hàng của bạn đang trống!</p>
+                        <a href="buyer.html" class="btn-back" style="display:inline-block;">🛍️ Chọn sản phẩm ngay</a>
+                    </div>
+                `;
+                finalPayAmount = 0;
+                updateQrImage();
                 return;
             }
 
-            const rawTotal = items.reduce((s, i) => s + (i.price * i.quantity), 0);
-            const finalAmt = checkoutMeta.amount > 0 ? checkoutMeta.amount : rawTotal;
-            document.getElementById('vnpAmountInput').value = finalAmt;
+            const shops = new Set(cartItems.map(i => i.shopName || 'Gian hàng chung'));
+            document.getElementById('shopCountBadge').innerText = `Tách thành ${shops.size} đơn theo Shop`;
 
-            document.getElementById('checkoutItemsPreview').innerHTML = items.map(i => `
-                <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px dashed #f4acb7;">
+            const rawTotal = cartItems.reduce((s, i) => s + (i.price * i.quantity), 0);
+            const modeMult = checkoutMeta.buyingMode.includes('-15%') ? 0.85 : 1;
+            const voucherMult = 1 - (Number(checkoutMeta.voucherDiscount || 0) / 100);
+            finalPayAmount = checkoutMeta.amount > 0 ? checkoutMeta.amount : Math.round(rawTotal * modeMult * voucherMult);
+
+            listEl.innerHTML = cartItems.map(item => `
+                <div class="order-item">
                     <div>
-                        <b>${i.name}</b> (x${i.quantity})
-                        <div style="font-size:11.5px; color:#6a1b9a;">🏪 ${i.shopName}</div>
+                        <b style="color:#4a148c;">${item.name}</b> <span style="color:#d81b60; font-weight:800;">x${item.quantity}</span>
+                        <div><span class="shop-pill">🏪 ${item.shopName || 'Gian hàng chung'}</span></div>
                     </div>
-                    <b style="color:#d81b60;">${Number(i.price * i.quantity).toLocaleString('vi-VN')} ₫</b>
+                    <div style="font-weight:900; color:#d81b60;">
+                        ${Number(item.price * item.quantity).toLocaleString('vi-VN')} ₫
+                    </div>
                 </div>
-            `).join('') + `
-                <div style="margin-top:12px; font-weight:900; display:flex; justify-content:space-between; font-size:15px; color:#ad1457;">
-                    <span>Tổng thanh toán (${checkoutMeta.buyingMode}):</span>
-                    <span>${finalAmt.toLocaleString('vi-VN')} ₫</span>
-                </div>
-            `;
+            `).join('');
+
+            document.getElementById('summaryMode').innerText = checkoutMeta.buyingMode;
+            document.getElementById('summaryVoucher').innerText = checkoutMeta.voucherDiscount > 0 ? `-${checkoutMeta.voucherDiscount}%` : 'Không dùng';
+            document.getElementById('summaryTotal').innerText = finalPayAmount.toLocaleString('vi-VN') + ' ₫';
+
+            updateQrImage();
         }
 
-        // Xử lý sự kiện onClick nút Thanh toán chuẩn trang 6 Lab 10
-        async function handleVnpayCheckout(useSimulator) {
-            const amount = Number(document.getElementById('vnpAmountInput').value);
-            const bankCode = document.querySelector('input[name="bankCode"]:checked').value;
-            const language = document.querySelector('input[name="language"]:checked').value;
+        async function processPayment(isDirectComplete) {
+            if (cartItems.length === 0 || finalPayAmount <= 0) {
+                return alert('Giỏ hàng đang trống! Hãy thêm sản phẩm trước khi thanh toán.');
+            }
 
-            if (!amount || amount <= 0) return alert('Giỏ hàng của bạn đang trống!');
+            const method = document.getElementById('selectedMethod').value;
 
-            // Nếu chọn COD thì gọi API checkout COD truyền thống
-            if (bankCode === 'COD') {
+            // Trường hợp 1: Thanh toán qua Ví điện tử MoMo
+            if (method === 'MOMO') {
                 const res = await Auth.apiFetch(`${API_BASE}/orders/checkout`, {
                     method: 'POST',
                     body: JSON.stringify({
-                        paymentMethod: 'Thanh toán khi nhận hàng (COD)',
+                        paymentMethod: 'Ví điện tử MoMo',
                         buyingMode: checkoutMeta.buyingMode
                     })
                 });
                 const data = await res.json();
-                if (res.ok) {
-                    window.location.href = `vnpay_return.html?vnp_ResponseCode=00&vnp_TxnRef=COD_${Date.now()}&vnp_Amount=${amount * 100}&vnp_BankCode=COD&vnp_OrderInfo=Thanh+toan+khi+nhan+hang+COD&sim=1`;
-                } else {
-                    alert('Lỗi đặt hàng: ' + data.error);
-                }
+                if (!res.ok) return alert('Lỗi thanh toán MoMo: ' + (data.error || 'Vui lòng thử lại'));
+
+                localStorage.removeItem('mkt_checkout_meta');
+                window.location.href = `vnpay_return.html?vnp_ResponseCode=00&vnp_TxnRef=MOMO_${Date.now()}&vnp_Amount=${finalPayAmount * 100}&vnp_BankCode=MOMO&vnp_OrderInfo=Thanh+toan+don+hang+qua+Vi+MoMo`;
                 return;
             }
 
-            // Gọi POST /api/orders/create_payment_url chuẩn Lab 10
+            // Trường hợp 2: Thanh toán qua VNPAYQR (Gọi đúng API /api/orders/create_payment_url của Lab 10)
             const res = await Auth.apiFetch(`${API_BASE}/orders/create_payment_url`, {
                 method: 'POST',
                 body: JSON.stringify({
-                    amount,
-                    bankCode,
-                    language,
+                    amount: finalPayAmount,
+                    bankCode: 'VNPAYQR',
+                    language: 'vn',
                     buyingMode: checkoutMeta.buyingMode,
                     voucherDiscount: checkoutMeta.voucherDiscount,
-                    useSimulator
+                    useSimulator: isDirectComplete
                 })
             });
 
             const result = await res.json();
-            if (!res.ok) return alert('Lỗi khởi tạo thanh toán: ' + (result.error || 'Vui lòng thử lại'));
+            if (!res.ok) return alert('Lỗi khởi tạo giao dịch VNPAYQR: ' + (result.error || 'Vui lòng thử lại'));
 
+            localStorage.removeItem('mkt_checkout_meta');
             window.location.href = result.paymentUrl;
         }
 
-        function goToOtpStep() {
-            const cardNo = document.getElementById('ncbCardNumber').value.trim();
-            if (!cardNo) return alert('Vui lòng nhập số thẻ NCB!');
-            document.getElementById('stepCardInput').style.display = 'none';
-            document.getElementById('stepOtpInput').style.display = 'block';
-        }
-
-        function confirmVnpayOtp() {
-            const otp = document.getElementById('ncbOtpValue').value.trim();
-            const urlParams = new URLSearchParams(window.location.search);
-
-            // Kiểm tra mã lỗi OTP theo bảng mã lỗi trang 34 Techspec VNPAY (00: Thành công, 06: Sai OTP)
-            const responseCode = otp === '123456' ? '00' : '06';
-            urlParams.set('vnp_ResponseCode', responseCode);
-            urlParams.set('vnp_TransactionStatus', responseCode);
-            urlParams.set('vnp_BankCode', 'NCB');
-            urlParams.set('vnp_BankTranNo', 'VNP' + Math.floor(10000000 + Math.random() * 90000000));
-            urlParams.set('vnp_CardType', 'ATM');
-            urlParams.set('vnp_TransactionNo', String(Math.floor(100000 + Math.random() * 900000)));
-            urlParams.set('sim', '1');
-
-            window.location.href = `${API_BASE}/orders/vnpay_return?${urlParams.toString()}`;
-        }
-
-        function cancelVnpayGateway() {
-            const urlParams = new URLSearchParams(window.location.search);
-            urlParams.set('vnp_ResponseCode', '24'); // Mã lỗi 24: Khách hàng hủy giao dịch (trang 35 Techspec)
-            urlParams.set('vnp_TransactionStatus', '11');
-            urlParams.set('sim', '1');
-            window.location.href = `${API_BASE}/orders/vnpay_return?${urlParams.toString()}`;
-        }
-
-        document.addEventListener('DOMContentLoaded', initCheckoutPage);
+        document.addEventListener('DOMContentLoaded', initCheckout);
     </script>
 </body>
 </html>

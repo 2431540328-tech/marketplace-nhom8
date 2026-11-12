@@ -12,7 +12,7 @@
         .navbar {
             background: rgba(255, 255, 255, 0.94);
             backdrop-filter: blur(10px);
-            padding: 14px 40px;
+            padding: 14px 36px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -46,7 +46,7 @@
             background: #fff0f5;
             color: #ad1457;
             border: 1.5px solid #f4acb7;
-            padding: 8px 16px;
+            padding: 8px 15px;
             border-radius: 22px;
             font-weight: 800;
             font-size: 13px;
@@ -58,7 +58,7 @@
             color: white;
             border-color: #d81b60;
         }
-        .nav-actions { display: flex; align-items: center; gap: 12px; }
+        .nav-actions { display: flex; align-items: center; gap: 10px; }
         .btn-cart-top {
             background: linear-gradient(135deg, #d81b60 0%, #8e24aa 100%);
             color: white;
@@ -90,6 +90,7 @@
             font-size: 13px;
             font-weight: 800;
             border: 1.5px solid #f4acb7;
+            cursor: pointer;
         }
         .btn-logout {
             background: #fff;
@@ -109,7 +110,7 @@
         .tab-view.active { display: block; animation: fadeIn 0.25s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Hero Banner giống hệt index.html */
+        /* Hero Banner */
         .hero-banner {
             background: linear-gradient(135deg, #f4acb7 0%, #cdb4db 100%);
             border-radius: 26px;
@@ -156,7 +157,7 @@
             border: 2px solid #ffffff;
         }
 
-        /* Danh mục Ngành hàng giống index.html */
+        /* Danh mục Ngành hàng */
         .section-title {
             font-size: 20px;
             font-weight: 900;
@@ -202,7 +203,10 @@
             margin-bottom: 24px;
             box-shadow: 0 4px 12px rgba(244, 172, 183, 0.15);
         }
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 13px; font-weight: 800; color: #4a148c; margin-bottom: 6px; }
         .form-control {
+            width: 100%;
             padding: 10px 14px;
             border-radius: 12px;
             border: 1.5px solid #f4acb7;
@@ -211,9 +215,9 @@
             color: #4a148c;
             background: #fffdfd;
         }
-        .form-control:focus { border-color: #d81b60; }
+        .form-control:focus { border-color: #d81b60; background: #fff; }
 
-        /* Lưới Sản Phẩm giống index.html */
+        /* Lưới Sản Phẩm */
         .product-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -283,12 +287,15 @@
             border: 1px solid #f4acb7;
         }
 
-        /* Card Box & Bảng cho các Tab phụ */
+        /* Card Box & Bảng */
+        .grid-2 { display: grid; grid-template-columns: 1.15fr 1fr; gap: 24px; }
+        @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+
         .card-box {
             background: white;
             border: 2px solid #f4acb7;
             border-radius: 22px;
-            padding: 22px;
+            padding: 24px;
             margin-bottom: 22px;
             box-shadow: 0 4px 14px rgba(244, 172, 183, 0.15);
         }
@@ -296,7 +303,7 @@
             color: #ad1457;
             font-size: 18px;
             font-weight: 900;
-            margin-bottom: 15px;
+            margin-bottom: 16px;
             border-bottom: 2px dashed #f4acb7;
             padding-bottom: 10px;
             display: flex;
@@ -313,7 +320,6 @@
         .badge-danger { background: #fee2e2; color: #991b1b; }
         .badge-purple { background: #f3e5f5; color: #6a1b9a; }
 
-        /* Chat Box */
         .chat-messages {
             height: 320px; padding: 15px; overflow-y: auto;
             display: flex; flex-direction: column; gap: 10px;
@@ -337,18 +343,19 @@
 </head>
 <body>
 
-    <!-- NAVBAR GIỐNG HỆT INDEX.HTML -->
+    <!-- NAVBAR -->
     <nav class="navbar">
         <a href="buyer.html" class="brand-logo">
             <span id="navLogo">🌸 PINKYMART</span>
         </a>
 
         <div class="nav-links">
-            <button class="nav-tab-btn active" onclick="switchView('view-home', this)">Khám Phá Mua Sắm</button>
-            <button class="nav-tab-btn" onclick="switchView('view-bargains', this)">Lịch Sử Mặc Cả</button>
+            <button class="nav-tab-btn active" onclick="switchView('view-home', this)">Khám Phá</button>
+            <button class="nav-tab-btn" onclick="switchView('view-bargains', this)">Mặc Cả</button>
             <button class="nav-tab-btn" onclick="switchView('view-orders', this)">Đơn Hàng & Đổi Trả</button>
-            <button class="nav-tab-btn" onclick="switchView('view-chat', this)">Chat Với Shop</button>
-            <button class="nav-tab-btn" onclick="switchView('view-reviews', this)">Đánh Giá SP</button>
+            <button class="nav-tab-btn" onclick="switchView('view-chat', this)">Chat Shop</button>
+            <button class="nav-tab-btn" onclick="switchView('view-reviews', this)">Đánh Giá</button>
+            <button class="nav-tab-btn" id="btnProfileTab" onclick="switchView('view-profile', this)">👤 Hồ Sơ & Địa Chỉ</button>
         </div>
 
         <div class="nav-actions">
@@ -356,7 +363,9 @@
                 🛒 Giỏ Hàng
                 <span class="cart-badge-count" id="navCartCount">0</span>
             </a>
-            <span class="user-chip">👤 <span id="buyerName"></span></span>
+            <span class="user-chip" onclick="switchView('view-profile', document.getElementById('btnProfileTab'))" title="Bấm để sửa hồ sơ">
+                👤 <span id="buyerName"></span>
+            </span>
             <button class="btn-logout" onclick="Auth.logout()">Đăng Xuất</button>
         </div>
     </nav>
@@ -489,7 +498,7 @@
                 <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
                     <div>
                         <label style="font-size:12.5px; font-weight:800;">Chọn Gian hàng:</label>
-                        <select id="chatShopSelect" class="form-control" style="width:100%; margin-top:4px;" onchange="loadBuyerChats()">
+                        <select id="chatShopSelect" class="form-control" style="margin-top:4px;" onchange="loadBuyerChats()">
                             <option value="Shop Nhóm 8">Shop Nhóm 8</option>
                             <option value="Gia Han phone">Gia Han phone</option>
                             <option value="Gian hàng chung">Gian hàng chung</option>
@@ -497,7 +506,7 @@
                     </div>
                     <div>
                         <label style="font-size:12.5px; font-weight:800;">Sản phẩm cần hỏi:</label>
-                        <input type="text" id="chatProductTopic" class="form-control" style="width:100%; margin-top:4px;" value="Tư vấn sản phẩm">
+                        <input type="text" id="chatProductTopic" class="form-control" style="margin-top:4px;" value="Tư vấn sản phẩm">
                     </div>
                 </div>
                 <div class="chat-messages" id="buyerChatBox"></div>
@@ -514,13 +523,13 @@
         <div id="view-reviews" class="tab-view">
             <div class="card-box" style="max-width:650px; margin:0 auto 22px;">
                 <h3 class="card-title">✍️ Gửi Đánh Giá Sản Phẩm Đã Nhận Hàng</h3>
-                <div style="margin-bottom:12px;">
-                    <label style="font-size:13px; font-weight:800;">Tên sản phẩm</label>
-                    <input type="text" id="revProdName" class="form-control" style="width:100%; margin-top:4px;" placeholder="VD: Áo Hoodie Local Brand Pastel">
+                <div class="form-group">
+                    <label>Tên sản phẩm</label>
+                    <input type="text" id="revProdName" class="form-control" placeholder="VD: Áo Hoodie Local Brand Pastel">
                 </div>
-                <div style="margin-bottom:12px;">
-                    <label style="font-size:13px; font-weight:800;">Mức sao đánh giá</label>
-                    <select id="revRating" class="form-control" style="width:100%; margin-top:4px;">
+                <div class="form-group">
+                    <label>Mức sao đánh giá</label>
+                    <select id="revRating" class="form-control">
                         <option value="5">⭐⭐⭐⭐⭐ 5 Sao (Tuyệt vời)</option>
                         <option value="4">⭐⭐⭐⭐ 4 Sao (Tốt)</option>
                         <option value="3">⭐⭐⭐ 3 Sao (Bình thường)</option>
@@ -528,9 +537,9 @@
                         <option value="1">⭐ 1 Sao (Rất tệ)</option>
                     </select>
                 </div>
-                <div style="margin-bottom:12px;">
-                    <label style="font-size:13px; font-weight:800;">Nhận xét của bạn</label>
-                    <textarea id="revComment" class="form-control" rows="3" style="width:100%; margin-top:4px;" placeholder="Chia sẻ trải nghiệm thực tế của bạn..."></textarea>
+                <div class="form-group">
+                    <label>Nhận xét của bạn</label>
+                    <textarea id="revComment" class="form-control" rows="3" placeholder="Chia sẻ trải nghiệm thực tế của bạn..."></textarea>
                 </div>
                 <button class="btn-card btn-buy-now" style="width:100%; padding:12px;" onclick="submitReview()">🌟 Gửi Đánh Giá Lên Sàn</button>
             </div>
@@ -546,10 +555,84 @@
             </div>
         </div>
 
+        <!-- ==========================================
+             VIEW 6: CẬP NHẬT THÔNG TIN CÁ NHÂN, SĐT, ĐỊA CHỈ & ĐỔI MẬT KHẨU
+             ========================================== -->
+        <div id="view-profile" class="tab-view">
+            <div class="grid-2">
+                <!-- Cột Trái: Cập nhật Thông tin & Địa chỉ Giao hàng -->
+                <div class="card-box">
+                    <h3 class="card-title">
+                        <span>👤 Cập Nhật Thông Tin Cá Nhân & Địa Chỉ Nhận Hàng</span>
+                        <span class="badge badge-purple">Đồng bộ qua VNPAY Checkout</span>
+                    </h3>
+
+                    <div class="form-group">
+                        <label>Tên đăng nhập (Username - Cố định)</label>
+                        <input type="text" id="profUsername" class="form-control" readonly style="background:#f3e5f5; font-weight:800;">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Họ và Tên người nhận hàng (*)</label>
+                        <input type="text" id="profFullName" class="form-control" placeholder="Nhập họ và tên...">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Số điện thoại liên hệ nhận hàng (*)</label>
+                        <input type="text" id="profPhone" class="form-control" placeholder="VD: 0901234567">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Địa chỉ Email nhận hóa đơn điện tử</label>
+                        <input type="email" id="profEmail" class="form-control" placeholder="VD: vana@gmail.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Địa chỉ giao hàng mặc định (Tỉnh/Thành, Quận/Huyện, Số nhà) (*)</label>
+                        <textarea id="profAddress" class="form-control" rows="3" placeholder="VD: 18A/1 Cộng Hòa, Phường 4, Quận Tân Bình, TP. Hồ Chí Minh"></textarea>
+                    </div>
+
+                    <button class="btn-card btn-buy-now" style="width:100%; padding:13px; font-size:14px;" onclick="saveBuyerProfile()">
+                        💾 Lưu Thông Tin Cá Nhân & Địa Chỉ Giao Hàng
+                    </button>
+                </div>
+
+                <!-- Cột Phải: Đổi Mật Khẩu Bảo Mật -->
+                <div class="card-box">
+                    <h3 class="card-title">
+                        <span>🔒 Đổi Mật Khẩu Bảo Mật Tài Khoản</span>
+                        <span class="badge badge-success">Mã hóa Bcrypt</span>
+                    </h3>
+                    <p style="font-size:13px; color:#6a1b9a; margin-bottom:16px; line-height:1.5;">
+                        Để bảo vệ tài khoản mua sắm và số dư hoàn tiền của bạn, vui lòng nhập mật khẩu hiện tại trước khi thiết lập mật khẩu mới.
+                    </p>
+
+                    <div class="form-group">
+                        <label>Mật khẩu hiện tại (*)</label>
+                        <input type="password" id="pwCurrent" class="form-control" placeholder="Nhập mật khẩu đang sử dụng...">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Mật khẩu mới (>= 6 ký tự) (*)</label>
+                        <input type="password" id="pwNew" class="form-control" placeholder="Nhập mật khẩu mới...">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Xác nhận lại mật khẩu mới (*)</label>
+                        <input type="password" id="pwConfirm" class="form-control" placeholder="Nhập lại mật khẩu mới...">
+                    </div>
+
+                    <button class="btn-card btn-purple" style="width:100%; padding:13px; font-size:14px; margin-top:8px;" onclick="changeBuyerPassword()">
+                        🔑 Xác Nhận Đổi Mật Khẩu Mới
+                    </button>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <div class="footer">
-        🌸 PinkyMart Buyer Portal - Giao Diện Đồng Bộ Trang Chủ • Tích Hợp Giỏ Hàng & Thanh Toán VNPAY Chuẩn Lab 10
+        🌸 PinkyMart Buyer Portal - Giao Diện Đồng Bộ Trang Chủ • Tích Hợp Hồ Sơ Cá Nhân, Giỏ Hàng & Thanh Toán VNPAY
     </div>
 
     <script src="auth.js"></script>
@@ -571,6 +654,83 @@
             if (viewId === 'view-orders') loadMyOrders();
             if (viewId === 'view-chat') loadBuyerChats();
             if (viewId === 'view-reviews') loadReviews();
+            if (viewId === 'view-profile') loadBuyerProfile();
+        }
+
+        // TẢI & CẬP NHẬT HỒ SƠ CÁ NHÂN + ĐỔI MẬT KHẨU
+        async function loadBuyerProfile() {
+            try {
+                const res = await Auth.apiFetch(`${API_BASE}/auth/me`);
+                if (!res.ok) return;
+                const data = await res.json();
+                const u = data.user || {};
+
+                document.getElementById('profUsername').value = u.username || '';
+                document.getElementById('profFullName').value = u.full_name || '';
+                document.getElementById('profPhone').value = u.phone || '';
+                document.getElementById('profEmail').value = u.email || '';
+                document.getElementById('profAddress').value = u.address || 'Học Viện Hàng Không Việt Nam - TP. Hồ Chí Minh';
+            } catch (e) {}
+        }
+
+        async function saveBuyerProfile() {
+            const full_name = document.getElementById('profFullName').value.trim();
+            const phone = document.getElementById('profPhone').value.trim();
+            const email = document.getElementById('profEmail').value.trim();
+            const address = document.getElementById('profAddress').value.trim();
+
+            if (!full_name || !phone || !address) {
+                return alert('Vui lòng nhập đầy đủ Họ tên, Số điện thoại và Địa chỉ giao hàng!');
+            }
+
+            const res = await Auth.apiFetch(`${API_BASE}/auth/profile`, {
+                method: 'PUT',
+                body: JSON.stringify({ full_name, phone, email, address })
+            });
+            const data = await res.json();
+
+            if (res.ok) {
+                // Cập nhật lại localStorage để đồng bộ tên và địa chỉ sang trang Checkout
+                const currentToken = Auth.getToken();
+                const updatedUser = { ...Auth.getUser(), ...data.user };
+                Auth.saveAuth(currentToken, updatedUser);
+                document.getElementById('buyerName').innerText = updatedUser.full_name || updatedUser.username;
+
+                alert('✅ ' + data.message);
+            } else {
+                alert('Lỗi: ' + (data.error || 'Không thể cập nhật thông tin'));
+            }
+        }
+
+        async function changeBuyerPassword() {
+            const currentPassword = document.getElementById('pwCurrent').value;
+            const newPassword = document.getElementById('pwNew').value;
+            const confirmPassword = document.getElementById('pwConfirm').value;
+
+            if (!currentPassword || !newPassword) {
+                return alert('Vui lòng nhập mật khẩu hiện tại và mật khẩu mới!');
+            }
+            if (newPassword.length < 6) {
+                return alert('Mật khẩu mới phải có từ 6 ký tự trở lên!');
+            }
+            if (newPassword !== confirmPassword) {
+                return alert('Mật khẩu xác nhận không khớp với mật khẩu mới!');
+            }
+
+            const res = await Auth.apiFetch(`${API_BASE}/auth/change-password`, {
+                method: 'PUT',
+                body: JSON.stringify({ currentPassword, newPassword })
+            });
+            const data = await res.json();
+
+            if (res.ok) {
+                alert('🔑 ' + data.message);
+                document.getElementById('pwCurrent').value = '';
+                document.getElementById('pwNew').value = '';
+                document.getElementById('pwConfirm').value = '';
+            } else {
+                alert('Lỗi đổi mật khẩu: ' + (data.error || 'Vui lòng kiểm tra lại'));
+            }
         }
 
         async function updateNavCartBadge() {
@@ -714,7 +874,7 @@
             if (res.ok) {
                 await updateNavCartBadge();
                 if (redirectCart) {
-                    window.location.href = 'cart.html'; // Chuẩn nút Buy Now trong Lab 10 (chuyển sang /cart)
+                    window.location.href = 'cart.html';
                 } else {
                     alert('🛒 Đã thêm "' + productName + '" vào giỏ hàng!');
                 }
@@ -739,7 +899,7 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ buyerName: buyer.username, productId, productName, shopName, originalPrice, offeredPrice })
             });
-            alert('🤝 Đã gửi yêu cầu trả giá đến Chủ Shop! Bạn có thể xem tại mục Lịch Sử Mặc Cả.');
+            alert('🤝 Đã gửi yêu cầu trả giá đến Chủ Shop! Bạn có thể xem tại mục Mặc Cả.');
         }
 
         async function loadBargains() {
@@ -883,6 +1043,10 @@
                 loadInitialMeta();
                 loadProducts();
                 updateNavCartBadge();
+                if (localStorage.getItem('open_orders') === '1') {
+                    localStorage.removeItem('open_orders');
+                    switchView('view-orders', document.querySelectorAll('.nav-tab-btn')[2]);
+                }
             }
         });
     </script>
